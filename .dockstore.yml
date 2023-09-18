@@ -6,8 +6,6 @@ workflows:
     authors:
       - name: Matthew Smith-Erb
         email: msmitherb@nygenome.org
-
-workflows:
   - subclass: WDL
     name: Prepare_Count_Files
     primaryDescriptorPath: /workflows/prepare_count_files.wdl
