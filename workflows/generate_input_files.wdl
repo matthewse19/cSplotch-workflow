@@ -1,6 +1,6 @@
 version 1.0
 
-workflow Generate_Inpupt_Files {
+workflow Generate_Input_Files {
     input {
         String docker = "msmitherb/csplotch:latest"
         String zones = "us-central1-a us-central1-b us-central1-c us-central1-f us-east1-b us-east1-c us-east1-d us-west1-a us-west1-b us-west1-c"
@@ -16,11 +16,11 @@ workflow Generate_Inpupt_Files {
         Int n_levels
         Int minimum_sequencing_depth = 100
         Int maximum_spots_per_tissue = 4992
-        String output_directory
+        String csplotch_input_dir
         Boolean visium = true
     }
     
-    call prepare {
+    call generate {
         input:
             docker = docker,
             zones = zones,
@@ -36,7 +36,7 @@ workflow Generate_Inpupt_Files {
             n_levels = n_levels,
             minimum_sequencing_depth = minimum_sequencing_depth,
             maximum_spots_per_tissue = maximum_spots_per_tissue,
-            output_directory = output_directory,
+            csplotch_input_dir = csplotch_input_dir,
             visium = visium
     }
 }
@@ -58,7 +58,7 @@ task generate {
         Int n_levels
         Int minimum_sequencing_depth = 100
         Int maximum_spots_per_tissue = 4992
-        String output_directory
+        String csplotch_input_dir
         Boolean visium = true
     }
 
@@ -74,11 +74,11 @@ task generate {
         
         mkdir ./splotch_inputs
 
-        splotch_generate_input_files -c spaceranger_output/*/*.unified.tsv -m ~{metadata_file} -s ~{scaling_factor} -l ~{n_levels} \
+        splotch_generate_input_files -c ./spaceranger_output/*/*.unified.tsv -m ~{metadata_file} -s ~{scaling_factor} -l ~{n_levels} \
             -d ~{minimum_sequencing_depth} -t ~{maximum_spots_per_tissue} ~{visium_flag} -o ./splotch_inputs > Generate_Inpupt_Files.log
 
         
-        gsutil cp -mr "./splotch_inputs/*" ~{output_directory}
+        gsutil -m cp -r "./splotch_inputs/*" ~{csplotch_input_dir}
         gsutil cp ./Generate_Inpupt_Files.log ~{root_dir}
     >>>
   
