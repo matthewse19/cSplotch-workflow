@@ -1,7 +1,7 @@
 version: 1.2
 workflows:
   - subclass: WDL
-    name: run_csplotch
+    name: Run_Splotch
     primaryDescriptorPath: /workflows/run_csplotch.wdl
     authors:
       - name: Matthew Smith-Erb
