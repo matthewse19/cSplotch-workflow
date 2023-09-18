@@ -53,7 +53,7 @@ task prepare {
         cd ./spaceranger_output
         for f in ./*/*.unified.tsv; do gsutil cp "$f" ~{spaceranger_dir}$f; done
 
-        gsutil cp ../Prepare_Count_Files.log ~{spaceranger_dir}/..
+        gsutil cp ../Prepare_Count_Files.log ~{spaceranger_dir}
     >>>
   
     runtime {
