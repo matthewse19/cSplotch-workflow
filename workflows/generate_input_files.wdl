@@ -75,11 +75,11 @@ task generate {
         mkdir ./splotch_inputs
 
         splotch_generate_input_files -c ./spaceranger_output/*/*.unified.tsv -m ~{metadata_file} -s ~{scaling_factor} -l ~{n_levels} \
-            -d ~{minimum_sequencing_depth} -t ~{maximum_spots_per_tissue} ~{visium_flag} -o ./splotch_inputs > Generate_Inpupt_Files.log
+            -d ~{minimum_sequencing_depth} -t ~{maximum_spots_per_tissue} ~{visium_flag} -o ./splotch_inputs > Generate_Input_Files.log
 
         
         gsutil -m cp -r "./splotch_inputs/*" ~{csplotch_input_dir}
-        gsutil cp ./Generate_Inpupt_Files.log ~{root_dir}
+        gsutil cp ./Generate_Input_Files.log ~{root_dir}
     >>>
   
     runtime {
