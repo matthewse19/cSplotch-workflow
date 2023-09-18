@@ -46,7 +46,7 @@ task prepare {
 
     command <<<
         mkdir ./spaceranger_output
-        gsutil cp -mr "~{spaceranger_dir}/*" ./spaceranger_output
+        gsutil -m cp -r "~{spaceranger_dir}/*" ./spaceranger_output
         
         splotch_prepare_count_files -c ./spaceranger_output/* -d ~{min_detection_rate} ~{visium_flag} > Prepare_Count_Files.log
 
