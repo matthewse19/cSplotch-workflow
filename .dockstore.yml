@@ -12,10 +12,9 @@ workflows:
     authors:
       - name: Matthew Smith-Erb
         email: msmitherb@nygenome.org
-
   - subclass: WDL
-  name: Generate_Input_Files
-  primaryDescriptorPath: /workflows/generate_input_files.wdl
-  authors:
-    - name: Matthew Smith-Erb
-      email: msmitherb@nygenome.org
+    name: Generate_Input_Files
+    primaryDescriptorPath: /workflows/generate_input_files.wdl
+    authors:
+      - name: Matthew Smith-Erb
+        email: msmitherb@nygenome.org
