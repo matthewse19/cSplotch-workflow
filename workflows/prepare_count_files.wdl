@@ -51,7 +51,7 @@ task prepare {
         splotch_prepare_count_files -c ./spaceranger_output/* -d ~{min_detection_rate} ~{visium_flag} > Prepare_Count_Files.log
 
         cd ./spaceranger_output
-        for f in ./*/*.unified.tsv; do gsutil cp "$f" ~{spaceranger_dir}/$f; done
+        for f in ./*/*.unified.tsv; do gsutil cp "$f" ~{spaceranger_dir}$f; done
 
         gsutil cp ../Prepare_Count_Files.log ~{spaceranger_dir}/..
     >>>
