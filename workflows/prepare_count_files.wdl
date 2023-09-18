@@ -8,6 +8,7 @@ workflow Prepare_Count_Files {
         String memory = "16G"
         Int disk_size_gb
         Int boot_disk_size_gb = 3
+        String root_dir
         String spaceranger_dir
         Float min_detection_rate = 0.02
         Boolean visium = true
@@ -21,6 +22,7 @@ workflow Prepare_Count_Files {
             memory = memory,
             disk_size_gb = disk_size_gb,
             boot_disk_size_gb = boot_disk_size_gb,
+            root_dir = root_dir,
             spaceranger_dir = spaceranger_dir,
             min_detection_rate = min_detection_rate,
             visium = visium
@@ -36,6 +38,7 @@ task prepare {
         String memory = "16G"
         Int disk_size_gb
         Int boot_disk_size_gb = 3
+        String root_dir
         String spaceranger_dir
         Float min_detection_rate = 0.02
         Boolean visium = true
@@ -53,7 +56,7 @@ task prepare {
         cd ./spaceranger_output
         for f in ./*/*.unified.tsv; do gsutil cp "$f" ~{spaceranger_dir}$f; done
 
-        gsutil cp ../Prepare_Count_Files.log ~{spaceranger_dir}
+        gsutil cp ../Prepare_Count_Files.log ~{root_dir}
     >>>
   
     runtime {
