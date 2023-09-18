@@ -1,0 +1,8 @@
+version: 0.0.1
+workflows:
+  - name: run_csplotch
+    subclass: WDL
+    primaryDescriptorPath: /workflows/run_csplotch.wdl
+    authors:
+      - name: Matthew Smith-Erb
+        email: msmitherb@nygenome.org
