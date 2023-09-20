@@ -118,7 +118,7 @@ task generate {
     >>>
   
     output {
-        File gene_indexes = "${root_dir}/gene_indexes.csv"
+        File gene_indexes = "./gene_indexes.csv"
     }
 
     runtime {
