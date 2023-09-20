@@ -39,6 +39,10 @@ workflow Generate_Input_Files {
             csplotch_input_dir = csplotch_input_dir,
             visium = visium
     }
+
+    output {
+        File gene_indexes_reference = generate.gene_indexes
+    }
 }
 
 
@@ -80,8 +84,43 @@ task generate {
         
         gsutil -m cp -r "./splotch_inputs/*" ~{csplotch_input_dir}
         gsutil cp ./Generate_Input_Files.log ~{root_dir}
+
+
+        python <<CODE
+            import pandas as pd
+            import pickle
+            from pathlib import Path
+    
+            info = pickle.load(open("./splotch_inputs/information.p", "rb"))
+            
+            dir = Path.cwd()
+            features_ex_path = list(dir.glob("./spaceranger_output/*/outs/filtered_feature_bc_matrix/features.tsv.gz"))[0].as_posix()
+            feature_example = pd.read_csv(features_ex_path, delimiter="\t", names=["ensembl", "gene", "type"])
+
+            if not(feature_example["ensembl"][0].startswith("ENS")):
+                feature_example = feature_example.rename(columns={"ensembl": "gene", "gene": "ensembl"})
+
+            idx_df = pd.DataFrame()
+
+            info_genes = info['genes']
+
+            key = "ensembl" if info_genes[0].startswith("ENS") else "gene"
+
+            idx_df[key] = info_genes
+            idx_df = idx_df.merge(feature_example, on=key)
+            idx_df.index = idx_df.index + 1
+            idx_df.index.name = "gene_index"
+
+            idx_df.to_csv("gene_indexes.csv", index=True)
+        CODE
+
+        gsutil cp gene_indexes.csv "${root_dir}/gene_indexes.csv"
     >>>
   
+    output {
+        File gene_indexes = "${root_dir}/gene_indexes.csv"
+    }
+
     runtime {
         preemptible: preemptible
         bootDiskSizeGb: boot_disk_size_gb
