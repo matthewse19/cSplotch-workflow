@@ -86,7 +86,7 @@ task generate {
         gsutil cp ./Generate_Input_Files.log ~{root_dir}
 
 
-        python <<CODE
+        python3 <<CODE
             import pandas as pd
             import pickle
             from pathlib import Path
