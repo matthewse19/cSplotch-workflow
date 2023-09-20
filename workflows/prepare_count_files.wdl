@@ -27,6 +27,12 @@ workflow Prepare_Count_Files {
             min_detection_rate = min_detection_rate,
             visium = visium
     }
+
+    output {
+        Int genes_detected = prepare.genes_detected
+        Int genes_kept = prepare.genes_kept
+        Int median_seq_depth = prepare.median_seq_depth
+    }
 }
 
 
@@ -57,9 +63,22 @@ task prepare {
 
         for f in ./*/*.unified.tsv; do gsutil cp "$f" ~{spaceranger_dir}`cut -c 2- <<< "$f"`; done #remove the leading '.' from the path
 
-        gsutil cp ../Prepare_Count_Files.log ~{root_dir}
+        cd ..
+
+        gsutil cp Prepare_Count_Files.log ~{root_dir}
+
+        #-o only the match, -P perl regex mode
+        grep -oP '(?<=We have detected )[0-9]*' Prepare_Count_Files.log > genes_detected.txt
+        grep -oP '(?<=We keep )[0-9]*' Prepare_Count_Files.log > genes_kept.txt
+        grep -oP '(?<=The median sequencing depth across the ST spots is )[0-9]*' Prepare_Count_Files.log > median_seq_depth.txt
     >>>
   
+    output {
+        Int genes_detected = read_int("genes_detected.txt")
+        Int genes_kept = read_int("genes_kept.txt")
+        Int median_seq_depth = read_int("median_seq_depth.txt")
+    }
+
     runtime {
         preemptible: preemptible
         bootDiskSizeGb: boot_disk_size_gb
