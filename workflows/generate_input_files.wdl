@@ -87,31 +87,31 @@ task generate {
 
 
         python3 <<CODE
-import pandas as pd
-import pickle
-from pathlib import Path
+        import pandas as pd
+        import pickle
+        from pathlib import Path
 
-info = pickle.load(open("./splotch_inputs/information.p", "rb"))
+        info = pickle.load(open("./splotch_inputs/information.p", "rb"))
 
-dir = Path.cwd()
-features_ex_path = list(dir.glob("./spaceranger_output/*/outs/filtered_feature_bc_matrix/features.tsv.gz"))[0].as_posix()
-feature_example = pd.read_csv(features_ex_path, delimiter="\t", names=["ensembl", "gene", "type"])
+        dir = Path.cwd()
+        features_ex_path = list(dir.glob("./spaceranger_output/*/outs/filtered_feature_bc_matrix/features.tsv.gz"))[0].as_posix()
+        feature_example = pd.read_csv(features_ex_path, delimiter="\t", names=["ensembl", "gene", "type"])
 
-if not(feature_example["ensembl"][0].startswith("ENS")):
-    feature_example = feature_example.rename(columns={"ensembl": "gene", "gene": "ensembl"})
+        if not(feature_example["ensembl"][0].startswith("ENS")):
+            feature_example = feature_example.rename(columns={"ensembl": "gene", "gene": "ensembl"})
 
-idx_df = pd.DataFrame()
+        idx_df = pd.DataFrame()
 
-info_genes = info['genes']
+        info_genes = info['genes']
 
-key = "ensembl" if info_genes[0].startswith("ENS") else "gene"
+        key = "ensembl" if info_genes[0].startswith("ENS") else "gene"
 
-idx_df[key] = info_genes
-idx_df = idx_df.merge(feature_example, on=key)
-idx_df.index = idx_df.index + 1
-idx_df.index.name = "gene_index"
+        idx_df[key] = info_genes
+        idx_df = idx_df.merge(feature_example, on=key)
+        idx_df.index = idx_df.index + 1
+        idx_df.index.name = "gene_index"
 
-idx_df.to_csv("gene_indexes.csv", index=True)
+        idx_df.to_csv("gene_indexes.csv", index=True)
         CODE
 
         gsutil cp gene_indexes.csv "${root_dir}/gene_indexes.csv"
