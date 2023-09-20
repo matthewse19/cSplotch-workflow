@@ -114,7 +114,7 @@ task generate {
         idx_df.to_csv("gene_indexes.csv", index=True)
         CODE
 
-        gsutil cp gene_indexes.csv "${root_dir}/gene_indexes.csv"
+        gsutil cp gene_indexes.csv "~{root_dir}/gene_indexes.csv"
     >>>
   
     output {
