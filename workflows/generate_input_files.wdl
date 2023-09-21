@@ -66,14 +66,18 @@ task generate {
         Boolean visium = true
     }
 
+    String root_dir_stripped = sub(root_dir, "/+$", "")
+    String spaceranger_dir_stripped = sub(spaceranger_dir, "/+$", "")
+    String annotation_dir_stripped = sub(annotation_dir, "/+$", "")
+    String csplotch_input_dir_stripped = sub(csplotch_input_dir, "/+$", "")
 
     String visium_flag = if visium then "-V" else ""
 
     command <<<
         mkdir ./spaceranger_output
         mkdir ./annotation
-        gsutil -m cp -r "~{spaceranger_dir}/*" ./spaceranger_output
-        gsutil -m cp -r "~{annotation_dir}/*" ./annotation
+        gsutil -m cp -r "~{spaceranger_dir_stripped}/*" ./spaceranger_output
+        gsutil -m cp -r "~{annotation_dir_stripped}/*" ./annotation
 
         
         mkdir ./splotch_inputs
@@ -82,8 +86,8 @@ task generate {
             -d ~{minimum_sequencing_depth} -t ~{maximum_spots_per_tissue} ~{visium_flag} -o ./splotch_inputs > Generate_Input_Files.log
 
         
-        gsutil -m cp -r "./splotch_inputs/*" ~{csplotch_input_dir}
-        gsutil cp ./Generate_Input_Files.log ~{root_dir}
+        gsutil -m cp -r "./splotch_inputs/*" ~{csplotch_input_dir_stripped}
+        gsutil cp ./Generate_Input_Files.log ~{root_dir_stripped}
 
 
         python3 <<CODE
@@ -114,7 +118,7 @@ task generate {
         idx_df.to_csv("gene_indexes.csv", index=True)
         CODE
 
-        gsutil cp ./gene_indexes.csv ~{root_dir}
+        gsutil cp ./gene_indexes.csv ~{root_dir_stripped}
     >>>
   
     output {

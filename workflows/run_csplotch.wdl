@@ -81,6 +81,9 @@ task run_splotch {
         Int num_chains
     }
 
+    String csplotch_input_dir_stripped = sub(csplotch_input_dir, "/+$", "")
+    String csplotch_output_dir_stripped = sub(csplotch_output_dir, "/+$", "")
+
     Int last_idx = first_idx + num_genes - 1
   
     command <<<
@@ -91,7 +94,7 @@ task run_splotch {
         do
             GENE_IDX=${ALL_GENES[$IDX]}
             GENE_DIR=$((GENE_IDX / 100))
-            GENE_FILE=~{csplotch_input_dir}/$GENE_DIR/data_$GENE_IDX.R
+            GENE_FILE=~{csplotch_input_dir_stripped}/$GENE_DIR/data_$GENE_IDX.R
             mkdir -p ./data_directory/$GENE_DIR
             gsutil cp $GENE_FILE ./data_directory/$GENE_DIR/
             
@@ -99,7 +102,7 @@ task run_splotch {
             
             splotch -g $GENE_IDX -d ./data_directory -o ./csplotch_outputs -b $SPLOTCH_BIN -n ~{num_samples} -c ~{num_chains} -s
             
-            gsutil cp ./csplotch_outputs/$GENE_DIR/combined_$GENE_IDX.hdf5 ~{csplotch_output_dir}/$GENE_DIR/combined_$GENE_IDX.hdf5
+            gsutil cp ./csplotch_outputs/$GENE_DIR/combined_$GENE_IDX.hdf5 ~{csplotch_output_dir_stripped}/$GENE_DIR/combined_$GENE_IDX.hdf5
             
         done
 

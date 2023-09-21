@@ -50,22 +50,25 @@ task prepare {
         Boolean visium = true
     }
 
+    String root_dir_stripped = sub(root_dir, "/+$", "")
+    String spaceranger_dir_stripped = sub(spaceranger_dir, "/+$", "")
+
 
     String visium_flag = if visium then "-V" else ""
 
     command <<<
         mkdir ./spaceranger_output
-        gsutil -m cp -r "~{spaceranger_dir}/*" ./spaceranger_output
+        gsutil -m cp -r "~{spaceranger_dir_stripped}/*" ./spaceranger_output
         
         splotch_prepare_count_files -c ./spaceranger_output/* -d ~{min_detection_rate} ~{visium_flag} > Prepare_Count_Files.log
 
         cd ./spaceranger_output
 
-        for f in ./*/*.unified.tsv; do gsutil cp "$f" ~{spaceranger_dir}`cut -c 2- <<< "$f"`; done #remove the leading '.' from the path
+        for f in ./*/*.unified.tsv; do gsutil cp "$f" ~{spaceranger_dir_stripped}`cut -c 2- <<< "$f"`; done #remove the leading '.' from the path
 
         cd ..
 
-        gsutil cp Prepare_Count_Files.log ~{root_dir}
+        gsutil cp Prepare_Count_Files.log ~{root_dir_stripped}
 
         #-o only the match, -P perl regex mode
         grep -oP '(?<=We have detected )[0-9]*' Prepare_Count_Files.log > genes_detected.txt
