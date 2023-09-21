@@ -19,7 +19,7 @@ workflow Run_Splotch {
     }
     
     #add extra offset if splotch_gene_idxs is defined bc its first element will be 0
-    Int start_idx = if length(splotch_gene_idxs) == 0 then 1 else 2 
+    Int start_idx = if length(splotch_gene_idxs) > 0 then 1 else 2 
     #if both total_genes is defined and splotch_gene_idxs has elements, overwrite total_genes to array's length
     Int? defined_total_genes = if defined(total_genes) && length(splotch_gene_idxs) == 0 then total_genes else length(splotch_gene_idxs)
     Array[Int] defined_splotch_gene_idxs = if length(splotch_gene_idxs) > 0 then splotch_gene_idxs else range(total_genes + 1)
