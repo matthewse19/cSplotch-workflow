@@ -8,15 +8,34 @@ workflow Run_Splotch {
         Int preemptible = 2
         String memory = "1G"
         Int disk_size_gb
+        Int max_concurrent_VMs
         Int bootDiskSizeGb = 3
-        Array[Int] gene_idxs
+        Array[Int] splotch_gene_idxs = [] #optional array
+        Int? total_genes
         Int num_samples = 500
         Int num_chains = 4
         String csplotch_input_dir
         String csplotch_output_dir
     }
     
-    scatter (gene_idx in gene_idxs){
+    #add extra offset if splotch_gene_idxs is defined bc its first element will be 0
+    Int start_idx = if length(splotch_gene_idxs) == 0 then 1 else 2 
+    #if both total_genes is defined and splotch_gene_idxs has elements, overwrite total_genes to array's length
+    Int? defined_total_genes = if defined(total_genes) && length(splotch_gene_idxs) == 0 then total_genes else length(splotch_gene_idxs)
+    Array[Int] defined_splotch_gene_idxs = if length(splotch_gene_idxs) > 0 then splotch_gene_idxs else range(total_genes + 1)
+
+    # "large_groups" will process floor(total_genes / max_vms) + 1 genes
+    # total_genes mod max_vms is the number of "large groups"
+    Int large_groups = defined_total_genes % max_concurrent_VMs
+    Int large_size = floor(defined_total_genes / max_concurrent_VMs) + 1
+    Int small_size = floor(defined_total_genes / max_concurrent_VMs)
+    
+    scatter (vm in range(max_concurrent_VMs)){
+        #larger chunks first
+        Int num_genes = if vm < large_groups then large_size else small_size
+        
+        Int current_idx = if vm < large_groups then start_idx + vm * large_size else start_idx + large_groups * large_size + (vm - large_groups) * small_size
+
         call run_splotch {
             input:
                 num_cpu = num_cpu,
@@ -26,18 +45,20 @@ workflow Run_Splotch {
                 preemptible = preemptible,
                 zones = zones,
                 docker = docker,
-                gene_idx = gene_idx,
+                first_idx = current_idx,
+                num_genes = num_genes,
+                all_genes = defined_splotch_gene_idxs,
                 csplotch_input_dir = csplotch_input_dir,
                 csplotch_output_dir = csplotch_output_dir,
                 num_samples = num_samples,
                 num_chains = num_chains
-      }
+        }
+
     }
   
-    
-  
     output {
-        Array[String] gene_summaries = run_splotch.gene_summary
+        Array[Int] first_index_list = run_splotch.out_first_idx
+        Array[Int] num_genes_list = run_splotch.out_num_genes
     }
 }
 
@@ -51,28 +72,42 @@ task run_splotch {
         Int preemptible
         String zones
         String docker
-        Int gene_idx
+        Int first_idx
+        Int num_genes
+        Array[Int] all_genes
         String csplotch_input_dir
         String csplotch_output_dir
         Int num_samples
         Int num_chains
     }
-    Int gene_dir = floor(gene_idx / 100.0)
-  	String gene_file = "${csplotch_input_dir}/${gene_dir}/data_${gene_idx}.R"
+
+    Int offset = num_genes - 1
   
     command <<<
-        mkdir -p ./data_directory/~{gene_dir}
-        gsutil cp ~{gene_file} ./data_directory/~{gene_dir}/
-        
-        mkdir -p ./csplotch_outputs/~{gene_dir}/
-        
-        splotch -g ~{gene_idx} -d ./data_directory -o ./csplotch_outputs -b $SPLOTCH_BIN -n ~{num_samples} -c ~{num_chains} -s
-        
-        gsutil cp ./csplotch_outputs/~{gene_dir}/combined_~{gene_idx}.hdf5 ~{csplotch_output_dir}/~{gene_dir}/combined_~{gene_idx}.hdf5
+        ALL_GENES=(~{sep=' ' all_genes}) #expands to (first_gene second_gene third gene...)
+
+        #IDX is the index of the all_genes array (not necessarily the cSplotch gene index)
+        for IDX in $(seq ~{first_idx} ~{offset}) 
+        do
+            GENE_IDX=$ALL_GENES[$IDX]
+            GENE_DIR=$((GENE_IDX / 100))
+            GENE_FILE=~{csplotch_input_dir}/$GENE_DIR/data_$GENE_IDX.R
+            mkdir -p ./data_directory/$GENE_DIR
+            gsutil cp $GENE_FILE ./data_directory/$GENE_DIR/
+            
+            mkdir -p ./csplotch_outputs/$GENE_DIR/
+            
+            splotch -g $GENE_IDX -d ./data_directory -o ./csplotch_outputs -b $SPLOTCH_BIN -n ~{num_samples} -c ~{num_chains} -s
+            
+            gsutil cp ./csplotch_outputs/$GENE_DIR/combined_$GENE_IDX.hdf5 ~{csplotch_output_dir}/$GENE_DIR/combined_$GENE_IDX.hdf5
+            
+        done
+
     >>>
   
     output {
-        String gene_summary = "${csplotch_output_dir}/${gene_dir}/combined_${gene_idx}.hdf5"
+        Int out_first_idx = first_idx
+        Int out_num_genes = num_genes
     }
   
     runtime {
