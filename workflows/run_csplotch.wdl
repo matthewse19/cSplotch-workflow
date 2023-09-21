@@ -19,7 +19,7 @@ workflow Run_Splotch {
     }
     
     #add extra offset if splotch_gene_idxs is defined bc its first element will be 0
-    Int start_idx = if length(splotch_gene_idxs) > 0 then 1 else 2 
+    Int start_idx = if length(splotch_gene_idxs) > 0 then 0 else 1
     #if both total_genes is defined and splotch_gene_idxs has elements, overwrite total_genes to array's length
     Int? defined_total_genes = if defined(total_genes) && length(splotch_gene_idxs) == 0 then total_genes else length(splotch_gene_idxs)
     Array[Int] defined_splotch_gene_idxs = if length(splotch_gene_idxs) > 0 then splotch_gene_idxs else range(total_genes + 1)
@@ -89,7 +89,7 @@ task run_splotch {
         #IDX is the index of the all_genes array (not necessarily the cSplotch gene index)
         for IDX in $(seq ~{first_idx} ~{last_idx}) 
         do
-            GENE_IDX=$ALL_GENES[$IDX]
+            GENE_IDX=${ALL_GENES[$IDX]}
             GENE_DIR=$((GENE_IDX / 100))
             GENE_FILE=~{csplotch_input_dir}/$GENE_DIR/data_$GENE_IDX.R
             mkdir -p ./data_directory/$GENE_DIR
