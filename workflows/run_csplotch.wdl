@@ -84,7 +84,7 @@ task run_splotch {
     Int last_idx = first_idx + num_genes - 1
   
     command <<<
-        ALL_GENES=(~{sep=' ' all_genes}) #expands to (first_gene second_gene third gene...)
+        ALL_GENES=(~{sep=' ' all_genes}) 
 
         #IDX is the index of the all_genes array (not necessarily the cSplotch gene index)
         for IDX in $(seq ~{first_idx} ~{last_idx}) 
