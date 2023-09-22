@@ -18,3 +18,9 @@ workflows:
     authors:
       - name: Matthew Smith-Erb
         email: msmitherb@nygenome.org
+  - subclass: WDL
+    name: Gene_Diff_Exp
+    primaryDescriptorPath: /workflows/gene_diff_exp.wdl
+    authors:
+      - name: Matthew Smith-Erb
+        email: msmitherb@nygenome.org
