@@ -3,6 +3,8 @@ import numpy as np
 import pandas as pd
 import os
 import h5py
+import pickle
+from multiprocessing import Pool
 
 def gene_de_dict(gene_h5, sinfo, test_type, aars, conditions, level=1):
     assert test_type in ['aars', 'conditions'], "test_type must be 'aars' or 'conditions' to calculate the DE"
@@ -47,7 +49,22 @@ def gene_de_dict(gene_h5, sinfo, test_type, aars, conditions, level=1):
 
     return {"bf": bf, "delta": delta}
 
-def de_csv(csv_path, sinfo, gene_lookup_df, splotch_output_path, test_type, aars, conditions, condition_level=1):
+#helper function for multiprocessing gene_de_dict
+def f(t):
+    gene_idx, name, ensembl, splotch_output_path, sinfo, test_type, aars, conditions, condition_level  = t
+    summary_path = os.path.join(splotch_output_path, str(gene_idx // 100), f"combined_{gene_idx}.hdf5")
+
+    gene_summary = h5py.File(summary_path, "r")
+
+    de_dict = gene_de_dict(gene_summary, sinfo, test_type, aars, conditions, condition_level)
+    de_dict['gene'] = name
+    de_dict['ensembl'] = ensembl
+
+    print(f"Processed gene {gene_idx}")
+    return de_dict
+
+
+def de_csv(csv_path, sinfo, gene_lookup_df, splotch_output_path, test_type, aars, conditions, condition_level=1, cores=1):
     assert test_type in ['aars', 'conditions'], "test_type must be 'aars' or 'conditions' to calculate the DE"
     
     num_levels = len(sinfo['beta_mapping'])
@@ -61,23 +78,16 @@ def de_csv(csv_path, sinfo, gene_lookup_df, splotch_output_path, test_type, aars
     assert set(aars).issubset(set(all_aars)), \
         f"The aars must be a list of elements from the full list of possible AARs: {all_aars}"
     
-    de_dict_list = []
-    for gene_idx, row in gene_lookup_df.iterrows():
-        name = row['gene']
-        ensembl = row['ensembl']
+    #only operate on genes with existing summary files
+    gene_data = filter(lambda tup: os.path.exists(os.path.join(splotch_output_path, str(tup[0] // 100), f"combined_{tup[0]}.hdf5")),\
+                gene_lookup_df[['gene', 'ensembl']].itertuples(name=None))
 
-        summary_path = os.path.join(splotch_output_path, gene_idx // 100, f"combined_{gene_idx}.hdf5")
+    data = [g + (splotch_output_path, sinfo, test_type, aars, conditions, condition_level) for g in gene_data]
 
-        #splotch may not have been run on all genes, only work on the summarized files
-        if os.path.exists(summary_path):
-            gene_summary = h5py.File(summary_path, "r")
-
-            de_dict = gene_de_dict(gene_summary, sinfo, test_type, aars, conditions, condition_level)
-            de_dict['gene'] = name
-            de_dict['ensembl'] = ensembl
-
-            de_dict_list.append(de_dict)
-            print(f"Processed gene {gene_idx}")
+    de_dict_list = None
+    with Pool(processes=cores) as pool:
+        results = pool.map(f, data)
+        de_dict_list = pd.DataFrame(results)
 
     pd.DataFrame(de_dict_list)[['gene', 'ensembl', 'bf', 'delta']].to_csv(csv_path, index=False)
 

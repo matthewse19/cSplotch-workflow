@@ -6,6 +6,7 @@ workflow Gene_Diff_Exp {
         String zones = "us-central1-a us-central1-b us-central1-c us-central1-f us-east1-b us-east1-c us-east1-d us-west1-a us-west1-b us-west1-c"
         Int preemptible = 2
         String memory = "16G"
+        Int num_cpu = 1
         Int disk_size_gb
         Int boot_disk_size_gb = 3
         File gene_indexes
@@ -30,6 +31,7 @@ workflow Gene_Diff_Exp {
             zones = zones,
             preemptible = preemptible,
             memory = memory,
+            num_cpu = num_cpu,
             disk_size_gb = disk_size_gb,
             boot_disk_size_gb = boot_disk_size_gb,
             gene_indexes = gene_indexes,
@@ -55,6 +57,7 @@ task diff_exp {
         String zones = "us-central1-a us-central1-b us-central1-c us-central1-f us-east1-b us-east1-c us-east1-d us-west1-a us-west1-b us-west1-c"
         Int preemptible = 2
         String memory = "16G"
+        Int num_cpu = 1
         Int disk_size_gb
         Int boot_disk_size_gb = 3
         File gene_indexes
@@ -94,7 +97,7 @@ task diff_exp {
         sinfo = pickle.load(open("~{splotch_information_p}", "rb"))
         gene_lookup_df = pd.read_csv("~{gene_indexes}", index_col=0)
 
-        de_analysis.de_csv("~{results_csv_name}", sinfo, gene_lookup_df, "./csplotch_outputs", "~{test_type}", aars, conditions, condition_level=~{condition_level})
+        de_analysis.de_csv("~{results_csv_name}", sinfo, gene_lookup_df, "./csplotch_outputs", "~{test_type}", aars, conditions, condition_level=~{condition_level}, cores=~{num_cpu})
         CODE
 
         gsutil cp ~{results_csv_name} ~{results_dir_stripped}
