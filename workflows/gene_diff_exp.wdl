@@ -84,11 +84,16 @@ task diff_exp {
         import pickle
         import pandas as pd
 
+        aars_str = "~{sep=',' aars}"
+        conditions_str = "~{sep=',' conditions}"
+
+        aars = aars_str.split(",")
+        conditions = conditions_str.split(",")
 
         sinfo = pickle.load(open("~{splotch_information_p}", "rb"))
         gene_lookup_df = pd.read_csv("~{gene_indexes}", index_col=0)
 
-        de_csv("~{results_csv_name}", sinfo, gene_lookup_df, "./csplotch_outputs", "~{test_type}", ~{aars}, ~{conditions}, condition_level=~{condition_level})
+        de_csv("~{results_csv_name}", sinfo, gene_lookup_df, "./csplotch_outputs", "~{test_type}", aars, conditions, condition_level=~{condition_level})
         CODE
 
         gsutil cp ~{results_csv_name} ~{results_dir_stripped}
