@@ -69,7 +69,7 @@ task diff_exp {
     }
 
     String csplotch_output_dir_stripped = sub(csplotch_output_dir, "/+$", "")
-    String results_dir_stripped = sub(results_dir_stripped, "/+$", "")
+    String results_dir_stripped = sub(results_dir, "/+$", "")
 
 
     command <<<
