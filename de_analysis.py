@@ -51,7 +51,7 @@ def de_csv(csv_path, sinfo, gene_lookup_df, splotch_output_path, test_type, aars
     assert test_type in ['aars', 'conditions'], "test_type must be 'aars' or 'conditions' to calculate the DE"
     
     num_levels = len(sinfo['beta_mapping'])
-    assert condition_level > 1 and condition_level <= num_levels, f"Condition level must be between 1 and {num_levels}"
+    assert condition_level >= 1 and condition_level <= num_levels, f"Condition level must be between 1 and {num_levels}"
     
     all_conditions = sinfo['beta_mapping'][f"beta_level_{condition_level}"]
     assert set(conditions).issubset(set(all_conditions)), \
