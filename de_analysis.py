@@ -1,4 +1,4 @@
-from splotch.utils import to_stain_varaiables, savagedickey
+from splotch.utils import to_stan_variables, savagedickey
 import numpy as np
 import pandas as pd
 import os
