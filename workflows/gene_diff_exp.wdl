@@ -46,7 +46,7 @@ workflow Gene_Diff_Exp {
     }
 
     output {
-        File de_results = diff_exp.de_results
+        String de_results = diff_exp.de_results
     }
 }
 
@@ -104,7 +104,7 @@ task diff_exp {
     >>>
   
     output {
-        File de_results = "${results_dir_stripped}/${results_csv_name}"
+        String de_results = "${results_dir_stripped}/${results_csv_name}"
     }
 
     runtime {

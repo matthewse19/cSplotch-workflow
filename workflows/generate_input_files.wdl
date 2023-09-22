@@ -41,7 +41,7 @@ workflow Generate_Input_Files {
     }
 
     output {
-        File gene_indexes_reference = generate.gene_indexes
+        String gene_indexes_reference = generate.gene_indexes
     }
 }
 
@@ -122,7 +122,7 @@ task generate {
     >>>
   
     output {
-        File gene_indexes = "./gene_indexes.csv"
+        String gene_indexes = "${root_dir_stripped}/gene_indexes.csv"
     }
 
     runtime {
