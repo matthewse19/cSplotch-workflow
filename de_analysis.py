@@ -7,6 +7,32 @@ import pickle
 from multiprocessing import Pool
 
 def gene_de_dict(gene_h5, sinfo, test_type, aars, conditions, level=1):
+    """Computes differential expression of the given gene with the specified tests
+
+    Parameters
+    ----------
+    gene_h5 : (hdf5) File object
+        Gene summary file object
+    sinfo : Obj
+        Unpickled information.p
+    test_type : str
+        aspect of model to test, either 'aars' or 'conditions'
+    aars : list[str]
+        When test_type='aars', one AAR tests that region against the rest,
+        and two AARs test them against each other.
+        When test_type='conditions', subset the data to only include spots of the given AARs.
+    conditions : list[str]
+        When test_type='conditions', one conditions tests that condition against the rest,
+        and two conditions test them against each other.
+        When test_type='aars', subset the data to only include samples with the specified condition.
+    level : int (default 1)
+        Beta level of the hierarchical model that the specified conditions come from.
+    
+    Returns
+    -------
+    dict()
+        Keys "bf" (Bayes Factor) and "delta" (log fold change)
+    """
     assert test_type in ['aars', 'conditions'], "test_type must be 'aars' or 'conditions' to calculate the DE"
 
     beta_level = f"beta_level_{level}"
@@ -50,7 +76,7 @@ def gene_de_dict(gene_h5, sinfo, test_type, aars, conditions, level=1):
     return {"bf": bf, "delta": delta}
 
 #helper function for multiprocessing gene_de_dict
-def f(t):
+def gene_dict_helper(t):
     gene_idx, name, ensembl, splotch_output_path, sinfo, test_type, aars, conditions, condition_level  = t
     summary_path = os.path.join(splotch_output_path, str(gene_idx // 100), f"combined_{gene_idx}.hdf5")
 
@@ -65,6 +91,35 @@ def f(t):
 
 
 def de_csv(csv_path, sinfo, gene_lookup_df, splotch_output_path, test_type, aars, conditions, condition_level=1, cores=1):
+    """
+    Creates a CSV containing the Bayes factor and log fold change for each gene file located in splotch_output_path
+
+    Parameters
+    ----------
+    csv_path : str
+        path to save the CSV
+    sinfo : Obj
+        Unpickled information.p
+    gene_lookup_df : DataFrame
+        pandas DataFrame where each row represents a gene with columns 'gene' and 'ensembl'
+    splotch_output_path : str
+        Path to the directory which contains the numbered parent directories,
+        each containing a gene summary hdf5 file.
+    test_type : str
+        aspect of model to test, either 'aars' or 'conditions'
+    aars : list[str]
+        When test_type='aars', one AAR tests that region against the rest,
+        and two AARs test them against each other.
+        When test_type='conditions', subset the data to only include spots of the given AARs.
+    conditions : list[str]
+        When test_type='conditions', one conditions tests that condition against the rest,
+        and two conditions test them against each other.
+        When test_type='aars', subset the data to only include samples with the specified condition.
+    level : int (default 1)
+        Beta level of the hierarchical model that the specified conditions come from.
+    cores : int (default 1)
+        Number of cores to utilize for the Multi-Processing of the gene files
+    """
     assert test_type in ['aars', 'conditions'], "test_type must be 'aars' or 'conditions' to calculate the DE"
     
     num_levels = len(sinfo['beta_mapping'])
@@ -86,7 +141,7 @@ def de_csv(csv_path, sinfo, gene_lookup_df, splotch_output_path, test_type, aars
 
     de_dict_list = None
     with Pool(processes=cores) as pool:
-        results = pool.map(f, data)
+        results = pool.map(gene_dict_helper, data)
         de_dict_list = pd.DataFrame(results)
 
     pd.DataFrame(de_dict_list)[['gene', 'ensembl', 'bf', 'delta']].to_csv(csv_path, index=False)
