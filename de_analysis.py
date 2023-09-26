@@ -5,6 +5,7 @@ import os
 import h5py
 import pickle
 from multiprocessing import Pool
+import sys
 
 def gene_de_dict(gene_h5, sinfo, test_type, aars, conditions, level=1):
     """Computes differential expression of the given gene with the specified tests
@@ -87,6 +88,8 @@ def gene_dict_helper(t):
     de_dict['ensembl'] = ensembl
 
     print(f"Processed gene {gene_idx}")
+    sys.stdout.flush()
+    
     return de_dict
 
 
