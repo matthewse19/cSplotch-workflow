@@ -111,7 +111,7 @@ task diff_exp {
         de_dict_list = None
 
         with Pool(processes=~{num_cpu}) as pool:
-            results = pool.map(gene_dict_helper, data)
+            results = pool.map(de_analysis.gene_dict_helper, data)
             de_dict_list = pd.DataFrame(results)
 
         pd.DataFrame(de_dict_list)[['gene', 'ensembl', 'bf', 'delta']].to_csv(csv_path, index=False)
