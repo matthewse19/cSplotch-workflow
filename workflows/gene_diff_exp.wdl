@@ -87,6 +87,7 @@ task diff_exp {
         import pickle
         import pandas as pd
         import de_analysis
+        import os
 
         aars_str = "~{sep=',' aars}"
         conditions_str = "~{sep=',' conditions}"
@@ -96,8 +97,23 @@ task diff_exp {
 
         sinfo = pickle.load(open("~{splotch_information_p}", "rb"))
         gene_lookup_df = pd.read_csv("~{gene_indexes}", index_col=0)
+        splotch_output_path = "./csplotch_outputs"
+        csv_path = "~{results_csv_name}"
+        test_type = "~{test_type}"
+        condition_level = ~{condition_level}
 
-        de_analysis.de_csv("~{results_csv_name}", sinfo, gene_lookup_df, "./csplotch_outputs", "~{test_type}", aars, conditions, condition_level=~{condition_level}, cores=~{num_cpu})
+        gene_data = filter(lambda tup: os.path.exists(os.path.join(splotch_output_path, str(tup[0] // 100), f"combined_{tup[0]}.hdf5")),\
+                gene_lookup_df[['gene', 'ensembl']].itertuples(name=None))
+
+        data = [g + (splotch_output_path, sinfo, test_type, aars, conditions, condition_level) for g in gene_data]
+
+        de_dict_list = None
+
+        with Pool(processes=~{num_cpu}) as pool:
+            results = pool.map(gene_dict_helper, data)
+            de_dict_list = pd.DataFrame(results)
+
+        pd.DataFrame(de_dict_list)[['gene', 'ensembl', 'bf', 'delta']].to_csv(csv_path, index=False)
         CODE
 
         gsutil cp ~{results_csv_name} ~{results_dir_stripped}
