@@ -83,39 +83,9 @@ task diff_exp {
         #TODO move analysis script elsewhere
         curl https://raw.githubusercontent.com/matthewse19/cSplotch-workflow/main/de_analysis.py -O
 
-        python3 <<CODE
-        import pickle
-        import pandas as pd
-        import de_analysis
-        import os
-        from multiprocessing import Pool
-
-        aars_str = "~{sep=',' aars}"
-        conditions_str = "~{sep=',' conditions}"
-
-        aars = aars_str.split(",")
-        conditions = conditions_str.split(",")
-
-        sinfo = pickle.load(open("~{splotch_information_p}", "rb"))
-        gene_lookup_df = pd.read_csv("~{gene_indexes}", index_col=0)
-        splotch_output_path = "./csplotch_outputs"
-        csv_path = "~{results_csv_name}"
-        test_type = "~{test_type}"
-        condition_level = ~{condition_level}
-
-        gene_data = filter(lambda tup: os.path.exists(os.path.join(splotch_output_path, str(tup[0] // 100), f"combined_{tup[0]}.hdf5")),\
-                gene_lookup_df[['gene', 'ensembl']].itertuples(name=None))
-
-        data = [g + (splotch_output_path, sinfo, test_type, aars, conditions, condition_level) for g in gene_data]
-
-        de_dict_list = None
-
-        with Pool(processes=~{num_cpu}) as pool:
-            results = pool.map(de_analysis.gene_dict_helper, data)
-            de_dict_list = pd.DataFrame(results)
-
-        pd.DataFrame(de_dict_list)[['gene', 'ensembl', 'bf', 'delta']].to_csv(csv_path, index=False)
-        CODE
+        python3 de_analysis.py \
+            "~{results_csv_name}" "~{splotch_information_p}" "~{gene_indexes}" "./csplotch_outputs" \
+            "~{test_type}" "~{sep=',' aars}" "~{sep=',' conditions}" "~{condition_level}" "~{num_cpu}"
 
         gsutil cp ~{results_csv_name} ~{results_dir_stripped}
     >>>

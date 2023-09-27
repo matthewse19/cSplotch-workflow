@@ -149,3 +149,22 @@ def de_csv(csv_path, sinfo, gene_lookup_df, splotch_output_path, test_type, aars
 
     pd.DataFrame(de_dict_list)[['gene', 'ensembl', 'bf', 'delta']].to_csv(csv_path, index=False)
 
+
+def main():
+    args = sys.argv
+    assert len(args) == 10
+    csv_path = args[1]
+    sinfo = pickle.load(open(args[2], "rb"))
+    gene_lookup_df = pd.read_csv(args[3])
+    splotch_output_path = args[4]
+    test_type = args[5]
+    aars = args[6].split(",")
+    conditions = args[7].split(",")
+    condition_level = int(args[8])
+    cores = int(args[9])
+    
+    de_csv(csv_path, sinfo, gene_lookup_df, splotch_output_path, test_type, aars, conditions, condition_level, cores)
+
+
+if __name__ == "__main__":
+    main()
