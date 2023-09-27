@@ -88,6 +88,7 @@ task diff_exp {
         import pandas as pd
         import de_analysis
         import os
+        from multiprocessing import Pool
 
         aars_str = "~{sep=',' aars}"
         conditions_str = "~{sep=',' conditions}"
