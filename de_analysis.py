@@ -94,6 +94,7 @@ def gene_dict_helper(t):
 
 def start_process():
     print('Starting', multiprocessing.current_process().name)
+    sys.stdout.flush()
 
 def de_csv(csv_path, sinfo, gene_lookup_df, splotch_output_path, test_type, aars, conditions, condition_level=1, cores=1, start_method='spawn'):
     """
@@ -146,7 +147,7 @@ def de_csv(csv_path, sinfo, gene_lookup_df, splotch_output_path, test_type, aars
 
     de_dict_list = None
     multiprocessing.set_start_method(start_method)
-    with multiprocessing.Pool(processes=cores) as pool:
+    with multiprocessing.Pool(processes=cores, initializer=start_process) as pool:
         results = pool.map(gene_dict_helper, data)
         de_dict_list = pd.DataFrame(results)
 
