@@ -4,7 +4,7 @@ import pandas as pd
 import os
 import h5py
 import pickle
-from multiprocessing import Pool
+import multiprocessing
 import sys
 
 def gene_de_dict(gene_h5, sinfo, test_type, aars, conditions, level=1):
@@ -92,8 +92,10 @@ def gene_dict_helper(t):
     
     return de_dict
 
+def start_process():
+    print('Starting', multiprocessing.current_process().name)
 
-def de_csv(csv_path, sinfo, gene_lookup_df, splotch_output_path, test_type, aars, conditions, condition_level=1, cores=1):
+def de_csv(csv_path, sinfo, gene_lookup_df, splotch_output_path, test_type, aars, conditions, condition_level=1, cores=1, start_method='spawn'):
     """
     Creates a CSV containing the Bayes factor and log fold change for each gene file located in splotch_output_path
 
@@ -143,7 +145,8 @@ def de_csv(csv_path, sinfo, gene_lookup_df, splotch_output_path, test_type, aars
     data = [g + (splotch_output_path, sinfo, test_type, aars, conditions, condition_level) for g in gene_data]
 
     de_dict_list = None
-    with Pool(processes=cores) as pool:
+    multiprocessing.set_start_method(start_method)
+    with multiprocessing.Pool(processes=cores) as pool:
         results = pool.map(gene_dict_helper, data)
         de_dict_list = pd.DataFrame(results)
 
