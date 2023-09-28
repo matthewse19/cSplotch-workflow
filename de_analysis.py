@@ -146,8 +146,7 @@ def de_csv(csv_path, sinfo, gene_lookup_df, splotch_output_path, test_type, aars
     data = [g + (splotch_output_path, sinfo, test_type, aars, conditions, condition_level) for g in gene_data]
 
     de_dict_list = None
-    multiprocessing.set_start_method(start_method)
-    with multiprocessing.Pool(processes=cores, initializer=start_process) as pool:
+    with multiprocessing.get_context(start_method).Pool(processes=cores, initializer=start_process) as pool:
         results = pool.map(gene_dict_helper, data)
         de_dict_list = pd.DataFrame(results)
 
