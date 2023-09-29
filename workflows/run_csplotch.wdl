@@ -5,7 +5,7 @@ workflow Run_Splotch {
         String docker = "msmitherb/csplotch:latest"
         String zones = "us-central1-a us-central1-b us-central1-c us-central1-f us-east1-b us-east1-c us-east1-d us-west1-a us-west1-b us-west1-c"
         Int num_cpu = 4
-        Int preemptible = 2
+        Int preemptible = 1
         String memory = "1G"
         Int disk_size_gb
         Int max_concurrent_VMs
@@ -16,6 +16,7 @@ workflow Run_Splotch {
         Int num_chains = 4
         String csplotch_input_dir
         String csplotch_output_dir
+        Float gene_timeout_hrs = 12
     }
     
     #add extra offset if splotch_gene_idxs is defined bc its first element will be 0
@@ -79,6 +80,7 @@ task run_splotch {
         String csplotch_output_dir
         Int num_samples
         Int num_chains
+        Float gene_timeout_hrs
     }
 
     String csplotch_input_dir_stripped = sub(csplotch_input_dir, "/+$", "")
@@ -102,9 +104,16 @@ task run_splotch {
                 
                 mkdir -p ./csplotch_outputs/$GENE_DIR/
                 
-                splotch -g $GENE_IDX -d ./data_directory -o ./csplotch_outputs -b $SPLOTCH_BIN -n ~{num_samples} -c ~{num_chains} -s
+                GENE_STATUS=`timeout ~{gene_timeout_hrs}h splotch -g $GENE_IDX -d ./data_directory -o ./csplotch_outputs -b $SPLOTCH_BIN -n ~{num_samples} -c ~{num_chains} -s; echo $?`
                 
-                gsutil cp ./csplotch_outputs/$GENE_DIR/combined_$GENE_IDX.hdf5 ~{csplotch_output_dir_stripped}/$GENE_DIR/combined_$GENE_IDX.hdf5
+                if [ $GENE_STATUS -eq 124 ]; then
+                    echo "Gene timed out after ~{gene_timeout_hrs} hours" > ./csplotch_outputs/timeout_$GENE_IDX.txt
+                    gsutil cp ./csplotch_outputs/timeout_$GENE_IDX.txt ~{csplotch_output_dir_stripped}/$GENE_DIR/timeout_$GENE_IDX.txt
+                else
+                    gsutil cp ./csplotch_outputs/$GENE_DIR/combined_$GENE_IDX.hdf5 ~{csplotch_output_dir_stripped}/$GENE_DIR/combined_$GENE_IDX.hdf5
+                fi
+
+
             fi
             
         done
