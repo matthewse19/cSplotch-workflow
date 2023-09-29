@@ -97,7 +97,7 @@ task run_splotch {
         do
             GENE_IDX=${ALL_GENES[$IDX]}
             GENE_DIR=$((GENE_IDX / 100))
-            SUMMARY_EXISTS=`gsutil -q stat gs://fc-c230706b-9a02-457b-b086-4371eef75869/nmj_assembloid/csplotch_outputs/$GENE_DIR/combined_$GENE_IDX.hdf5; echo $?`
+            SUMMARY_EXISTS=`gsutil -q stat ~{csplotch_output_dir_stripped}/$GENE_DIR/combined_$GENE_IDX.hdf5; echo $?`
             if [ $SUMMARY_EXISTS -ne 0 ]; then
                 GENE_FILE=~{csplotch_input_dir_stripped}/$GENE_DIR/data_$GENE_IDX.R
                 mkdir -p ./data_directory/$GENE_DIR
