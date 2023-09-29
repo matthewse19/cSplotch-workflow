@@ -52,7 +52,8 @@ workflow Run_Splotch {
                 csplotch_input_dir = csplotch_input_dir,
                 csplotch_output_dir = csplotch_output_dir,
                 num_samples = num_samples,
-                num_chains = num_chains
+                num_chains = num_chains,
+                gene_timeout_hrs = gene_timeout_hrs
         }
 
     }
