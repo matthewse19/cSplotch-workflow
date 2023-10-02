@@ -105,7 +105,8 @@ task run_splotch {
                 
                 mkdir -p ./csplotch_outputs/$GENE_DIR/
                 
-                GENE_STATUS=`timeout ~{gene_timeout_hrs}h splotch -g $GENE_IDX -d ./data_directory -o ./csplotch_outputs -b $SPLOTCH_BIN -n ~{num_samples} -c ~{num_chains} -s; echo $?`
+                timeout ~{gene_timeout_hrs}h splotch -g $GENE_IDX -d ./data_directory -o ./csplotch_outputs -b $SPLOTCH_BIN -n ~{num_samples} -c ~{num_chains} -s
+                GENE_STATUS=`echo $?`
                 
                 if [ $GENE_STATUS -eq 124 ]; then
                     echo "Gene timed out after ~{gene_timeout_hrs} hours" > ./csplotch_outputs/timeout_$GENE_IDX.txt
