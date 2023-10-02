@@ -60,7 +60,7 @@ task prepare {
         mkdir ./spaceranger_output
         gsutil -m cp -r "~{spaceranger_dir_stripped}/*" ./spaceranger_output
         
-        splotch_prepare_count_files -c ./spaceranger_output/* -d ~{min_detection_rate} ~{visium_flag} > Prepare_Count_Files.log
+        splotch_prepare_count_files -c ./spaceranger_output/* -d ~{min_detection_rate} ~{visium_flag} | tee Prepare_Count_Files.log
 
         cd ./spaceranger_output
 
