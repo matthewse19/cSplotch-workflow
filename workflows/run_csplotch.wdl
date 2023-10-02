@@ -112,7 +112,9 @@ task run_splotch {
                     gsutil cp ./csplotch_outputs/timeout_$GENE_IDX.txt ~{csplotch_output_dir_stripped}/$GENE_DIR/timeout_$GENE_IDX.txt
                 else
                     gsutil cp ./csplotch_outputs/$GENE_DIR/combined_$GENE_IDX.hdf5 ~{csplotch_output_dir_stripped}/$GENE_DIR/combined_$GENE_IDX.hdf5
+                    rm ./csplotch_outputs/$GENE_DIR/combined_$GENE_IDX.hdf5
                 fi
+                rm ~{csplotch_input_dir_stripped}/$GENE_DIR/data_$GENE_IDX.R
 
 
             fi
