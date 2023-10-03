@@ -8,7 +8,7 @@ import multiprocessing
 from concurrent.futures import ProcessPoolExecutor
 import sys
 
-def gene_de_dict(gene_h5, sinfo, test_type, aars, conditions, level=1):
+def gene_de_dict(gene_h5, annotation_mapping, beta_mapping, test_type, aars, conditions, level=1):
     """Computes differential expression of the given gene with the specified tests
 
     Parameters
@@ -39,18 +39,18 @@ def gene_de_dict(gene_h5, sinfo, test_type, aars, conditions, level=1):
 
     beta_level = f"beta_level_{level}"
 
-    aar_idxs = [to_stan_variables(sinfo['annotation_mapping'], m) for m in aars]
-    condition_idxs = [to_stan_variables(sinfo['beta_mapping'][beta_level], t) for t in conditions]
+    aar_idxs = [to_stan_variables(annotation_mapping, m) for m in aars]
+    condition_idxs = [to_stan_variables(beta_mapping[beta_level], t) for t in conditions]
 
     if test_type == "aars":
         assert len(aars) in [1,2], "For aars test type, must specify either one aar (for one vs rest) or two aars (one vs one)"
 
         if conditions is None or len(conditions) == 0:
-            condition_idxs = list(range(len(sinfo['beta_mapping'][beta_level])))
+            condition_idxs = list(range(len(beta_mapping[beta_level])))
 
         first_aar_idx = aar_idxs[0]
         if len(aars) == 1:
-            second_aar_idx = list(set(range(len(sinfo['annotation_mapping']))) - first_aar_idx) #remove first index from [0, 1, ... num_aars]
+            second_aar_idx = list(set(range(len(annotation_mapping))) - first_aar_idx) #remove first index from [0, 1, ... num_aars]
         else:
             second_aar_idx = aar_idxs[1]
 
@@ -62,11 +62,11 @@ def gene_de_dict(gene_h5, sinfo, test_type, aars, conditions, level=1):
         assert len(conditions) in [1,2] and len(aars) > 0, "For conditions test type, must specify either one condition (for one vs rest) or two conditions (one vs one), and an aar"
 
         if aars is None or len(aars) == 0:
-            aar_idxs = list(range(len(sinfo['annotation_mapping'])))
+            aar_idxs = list(range(len(annotation_mapping)))
 
         first_condition_idx = condition_idxs[0]
         if len(condition_idxs) == 1:
-            second_condition_idx = list(set(range(len(sinfo['beta_mapping'][beta_level]))) - first_condition_idx) #remove first index from rest
+            second_condition_idx = list(set(range(len(beta_mapping[beta_level]))) - first_condition_idx) #remove first index from rest
         else:
             second_condition_idx = condition_idxs[1]
 
@@ -147,7 +147,7 @@ def de_csv(csv_path, sinfo, gene_lookup_df, splotch_output_path, test_type, aars
     gene_data = filter(lambda tup: os.path.exists(os.path.join(splotch_output_path, str(tup[0] // 100), f"combined_{tup[0]}.hdf5")),\
                 gene_lookup_df[['gene', 'ensembl']].itertuples(name=None))
 
-    data = [g + (splotch_output_path, sinfo, test_type, aars, conditions, condition_level) for g in gene_data]
+    data = [g + (splotch_output_path, sinfo['annotation_mapping'], sinfo['beta_mapping'], test_type, aars, conditions, condition_level) for g in gene_data]
 
     with ProcessPoolExecutor(max_workers=cores) as exector:
         results = exector.map(gene_dict_helper, data)
@@ -166,6 +166,7 @@ def main():
     csv_path = args[1]
     sinfo = pickle.load(open(args[2], "rb"))
     gene_lookup_df = pd.read_csv(args[3])
+    gene_lookup_df.set_index('gene_index')
     splotch_output_path = args[4]
     test_type = args[5]
     aars = args[6].split(",")
