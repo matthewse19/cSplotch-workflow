@@ -5,6 +5,7 @@ import os
 import h5py
 import pickle
 import multiprocessing
+from concurrent.futures import ProcessPoolExecutor
 import sys
 
 def gene_de_dict(gene_h5, sinfo, test_type, aars, conditions, level=1):
@@ -79,6 +80,9 @@ def gene_de_dict(gene_h5, sinfo, test_type, aars, conditions, level=1):
 #helper function for multiprocessing gene_de_dict
 def gene_dict_helper(t):
     gene_idx, name, ensembl, splotch_output_path, sinfo, test_type, aars, conditions, condition_level  = t
+    print(f"Started processing {gene_idx}")
+    sys.stdout.flush()
+
     summary_path = os.path.join(splotch_output_path, str(gene_idx // 100), f"combined_{gene_idx}.hdf5")
 
     gene_summary = h5py.File(summary_path, "r")
@@ -145,12 +149,15 @@ def de_csv(csv_path, sinfo, gene_lookup_df, splotch_output_path, test_type, aars
 
     data = [g + (splotch_output_path, sinfo, test_type, aars, conditions, condition_level) for g in gene_data]
 
-    de_dict_list = None
-    with multiprocessing.get_context(start_method).Pool(processes=cores, initializer=start_process) as pool:
-        results = pool.map(gene_dict_helper, data)
-        de_dict_list = pd.DataFrame(results)
+    with ProcessPoolExecutor(max_workers=cores) as exector:
+        results = exector.map(gene_dict_helper, data)
 
-    pd.DataFrame(de_dict_list)[['gene', 'ensembl', 'bf', 'delta']].to_csv(csv_path, index=False)
+    #de_dict_list = None
+    # with multiprocessing.get_context(start_method).Pool(processes=cores, initializer=start_process) as pool:
+    #     results = pool.map(gene_dict_helper, data)
+    #     de_dict_list = pd.DataFrame(results)
+
+    pd.DataFrame(results)[['gene', 'ensembl', 'bf', 'delta']].to_csv(csv_path, index=False)
 
 
 def main():
