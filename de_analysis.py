@@ -79,7 +79,7 @@ def gene_de_dict(gene_h5, annotation_mapping, beta_mapping, test_type, aars, con
 
 #helper function for multiprocessing gene_de_dict
 def gene_dict_helper(t):
-    gene_idx, name, ensembl, splotch_output_path, sinfo, test_type, aars, conditions, condition_level  = t
+    gene_idx, name, ensembl, splotch_output_path, annotation_mapping, beta_mapping, test_type, aars, conditions, condition_level  = t
     print(f"Started processing {gene_idx}")
     sys.stdout.flush()
 
@@ -87,7 +87,7 @@ def gene_dict_helper(t):
 
     gene_summary = h5py.File(summary_path, "r")
 
-    de_dict = gene_de_dict(gene_summary, sinfo, test_type, aars, conditions, condition_level)
+    de_dict = gene_de_dict(gene_summary, annotation_mapping, beta_mapping, test_type, aars, conditions, condition_level)
     de_dict['gene'] = name
     de_dict['ensembl'] = ensembl
 
