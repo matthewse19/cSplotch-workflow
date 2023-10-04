@@ -129,7 +129,7 @@ task run_splotch {
                     echo $RETRY > ./csplotch_outputs/timeout_$GENE_IDX.txt
                     echo "Gene timed out after ~{gene_timeout_hrs} hours" | tee -a ./csplotch_outputs/timeout_$GENE_IDX.txt
 
-                    if [ $RETRY -le ~{retries_per_gene} ]; then
+                    if [ $RETRY -lt ~{retries_per_gene} ]; then
                         echo "Attempting another run" | tee -a ./csplotch_outputs/timeout_$GENE_IDX.txt
                         gsutil cp ./csplotch_outputs/timeout_$GENE_IDX.txt ~{csplotch_output_dir_stripped}/$GENE_DIR/timeout_$GENE_IDX.txt
                         exit 124
