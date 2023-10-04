@@ -117,7 +117,7 @@ task run_splotch {
                 if [ $GENE_STATUS -eq 124 ]; then
                     gsutil cp ~{csplotch_output_dir_stripped}/$GENE_DIR/timeout_$GENE_IDX.txt ./csplotch_outputs/timeout_$GENE_IDX.txt
 
-                    if [ $? -eq 0]; then
+                    if [ $? -eq 0 ]; then
                         RETRY=`head -n1 ./csplotch_outputs/timeout_$GENE_IDX.txt`
                         RETRY=$(( RETRY + 1 ))
                     else
