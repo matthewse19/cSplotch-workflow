@@ -83,6 +83,7 @@ task run_splotch {
         Int num_chains
         Float gene_timeout_hrs
         Int retries_per_gene = 2
+        Int vm_total_retries = 5
     }
 
     String csplotch_input_dir_stripped = sub(csplotch_input_dir, "/+$", "")
@@ -163,6 +164,6 @@ task run_splotch {
         cpu: num_cpu
         zones: zones
         memory: memory
-        maxRetries: 3
+        maxRetries: vm_total_retries
     }
 }
