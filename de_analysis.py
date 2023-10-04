@@ -100,7 +100,7 @@ def start_process():
     print('Starting', multiprocessing.current_process().name)
     sys.stdout.flush()
 
-def de_csv(csv_path, sinfo, gene_lookup_df, splotch_output_path, test_type, aars, conditions, condition_level=1, cores=1, start_method='spawn'):
+def de_csv(csv_path, sinfo, gene_lookup_df, splotch_output_path, test_type, aars, conditions, condition_level=1, cores=1, start_method='fork'):
     """
     Creates a CSV containing the Bayes factor and log fold change for each gene file located in splotch_output_path
 
@@ -149,13 +149,11 @@ def de_csv(csv_path, sinfo, gene_lookup_df, splotch_output_path, test_type, aars
 
     data = [g + (splotch_output_path, sinfo['annotation_mapping'], sinfo['beta_mapping'], test_type, aars, conditions, condition_level) for g in gene_data]
 
-    with ProcessPoolExecutor(max_workers=cores) as exector:
-        results = exector.map(gene_dict_helper, data)
+    # with ProcessPoolExecutor(max_workers=cores) as exector:
+    #     results = exector.map(gene_dict_helper, data)
 
-    #de_dict_list = None
-    # with multiprocessing.get_context(start_method).Pool(processes=cores, initializer=start_process) as pool:
-    #     results = pool.map(gene_dict_helper, data)
-    #     de_dict_list = pd.DataFrame(results)
+    with multiprocessing.get_context(start_method).Pool(processes=cores, initializer=start_process) as pool:
+        results = pool.imap_unordered(gene_dict_helper, data, chunksize=100)
 
     pd.DataFrame(results)[['gene', 'ensembl', 'bf', 'delta']].to_csv(csv_path, index=False)
 
