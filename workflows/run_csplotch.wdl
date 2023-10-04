@@ -82,6 +82,7 @@ task run_splotch {
         Int num_samples
         Int num_chains
         Float gene_timeout_hrs
+        Int retries_per_gene = 2
     }
 
     String csplotch_input_dir_stripped = sub(csplotch_input_dir, "/+$", "")
@@ -90,6 +91,11 @@ task run_splotch {
     Int last_idx = first_idx + num_genes - 1
   
     command <<<
+        echo "Environment variables"
+        echo "---------------------"
+
+        printenv
+
         ALL_GENES=(~{sep=' ' all_genes}) 
 
         #IDX is the index of the all_genes array (not necessarily the cSplotch gene index)
@@ -109,8 +115,27 @@ task run_splotch {
                 GENE_STATUS=`echo $?`
                 
                 if [ $GENE_STATUS -eq 124 ]; then
-                    echo "Gene timed out after ~{gene_timeout_hrs} hours" > ./csplotch_outputs/timeout_$GENE_IDX.txt
-                    gsutil cp ./csplotch_outputs/timeout_$GENE_IDX.txt ~{csplotch_output_dir_stripped}/$GENE_DIR/timeout_$GENE_IDX.txt
+                    gsutil cp ~{csplotch_output_dir_stripped}/$GENE_DIR/timeout_$GENE_IDX.txt ./csplotch_outputs/timeout_$GENE_IDX.txt
+
+                    if [ $? -eq 0]; then
+                        RETRY=`head -n1 ./csplotch_outputs/timeout_$GENE_IDX.txt`
+                        RETRY=$(( RETRY + 1 ))
+                    else
+                        RETRY=1
+                    fi
+
+                    echo $RETRY > ./csplotch_outputs/timeout_$GENE_IDX.txt
+                    echo "Gene timed out after ~{gene_timeout_hrs} hours" | tee -a ./csplotch_outputs/timeout_$GENE_IDX.txt
+
+                    if [ $RETRY -le ~{retries_per_gene} ]; then
+                        echo "Attempting another run" | tee -a ./csplotch_outputs/timeout_$GENE_IDX.txt
+                        gsutil cp ./csplotch_outputs/timeout_$GENE_IDX.txt ~{csplotch_output_dir_stripped}/$GENE_DIR/timeout_$GENE_IDX.txt
+                        exit 124
+                    else
+                        echo "Exceeded limit of ~{retries_per_gene} number of gene retries, moving to next gene" | tee -a ./csplotch_outputs/timeout_$GENE_IDX.txt
+                        gsutil cp ./csplotch_outputs/timeout_$GENE_IDX.txt ~{csplotch_output_dir_stripped}/$GENE_DIR/timeout_$GENE_IDX.txt
+                    fi
+
                 else
                     gsutil cp ./csplotch_outputs/$GENE_DIR/combined_$GENE_IDX.hdf5 ~{csplotch_output_dir_stripped}/$GENE_DIR/combined_$GENE_IDX.hdf5
                     rm ./csplotch_outputs/$GENE_DIR/combined_$GENE_IDX.hdf5
@@ -137,5 +162,6 @@ task run_splotch {
         cpu: num_cpu
         zones: zones
         memory: memory
+        maxRetries: 3
     }
 }
