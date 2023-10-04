@@ -104,25 +104,26 @@ task run_splotch {
             GENE_IDX=${ALL_GENES[$IDX]}
             GENE_DIR=$((GENE_IDX / 100))
             SUMMARY_EXISTS=`gsutil -q stat ~{csplotch_output_dir_stripped}/$GENE_DIR/combined_$GENE_IDX.hdf5; echo $?`
-            if [ $SUMMARY_EXISTS -ne 0 ]; then
+
+            mkdir -p ./csplotch_outputs/$GENE_DIR/
+            gsutil cp ~{csplotch_output_dir_stripped}/$GENE_DIR/timeout_$GENE_IDX.txt ./csplotch_outputs/timeout_$GENE_IDX.txt
+            if [ $? -eq 0 ]; then
+                RETRY=`head -n1 ./csplotch_outputs/timeout_$GENE_IDX.txt`
+                RETRY=$(( RETRY + 1 ))
+            else
+                RETRY=1
+            fi
+
+            if [[ $SUMMARY_EXISTS -ne 0 && ($RETRY -le ~{retries_per_gene}) ]]; then
                 GENE_FILE=~{csplotch_input_dir_stripped}/$GENE_DIR/data_$GENE_IDX.R
                 mkdir -p ./data_directory/$GENE_DIR
                 gsutil cp $GENE_FILE ./data_directory/$GENE_DIR/
                 
-                mkdir -p ./csplotch_outputs/$GENE_DIR/
                 
                 timeout ~{gene_timeout_hrs}h splotch -g $GENE_IDX -d ./data_directory -o ./csplotch_outputs -b $SPLOTCH_BIN -n ~{num_samples} -c ~{num_chains} -s
                 GENE_STATUS=`echo $?`
                 
-                if [ $GENE_STATUS -eq 124 ]; then
-                    gsutil cp ~{csplotch_output_dir_stripped}/$GENE_DIR/timeout_$GENE_IDX.txt ./csplotch_outputs/timeout_$GENE_IDX.txt
-
-                    if [ $? -eq 0 ]; then
-                        RETRY=`head -n1 ./csplotch_outputs/timeout_$GENE_IDX.txt`
-                        RETRY=$(( RETRY + 1 ))
-                    else
-                        RETRY=1
-                    fi
+                if [ $GENE_STATUS == 124 ]; then
 
                     echo $RETRY > ./csplotch_outputs/timeout_$GENE_IDX.txt
                     echo "Gene timed out after ~{gene_timeout_hrs} hours" | tee -a ./csplotch_outputs/timeout_$GENE_IDX.txt
