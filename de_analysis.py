@@ -100,7 +100,7 @@ def start_process():
     print('Starting', multiprocessing.current_process().name)
     sys.stdout.flush()
 
-def de_csv(csv_path, sinfo, gene_lookup_df, splotch_output_path, test_type, aars, conditions, condition_level=1, cores=1, start_method='fork'):
+def de_csv(csv_path, sinfo, gene_lookup_df, splotch_output_path, test_type, aars, conditions, condition_level=1, start_gene=1, total_genes=None):
     """
     Creates a CSV containing the Bayes factor and log fold change for each gene file located in splotch_output_path
 
@@ -127,8 +127,6 @@ def de_csv(csv_path, sinfo, gene_lookup_df, splotch_output_path, test_type, aars
         When test_type='aars', subset the data to only include samples with the specified condition.
     level : int (default 1)
         Beta level of the hierarchical model that the specified conditions come from.
-    cores : int (default 1)
-        Number of cores to utilize for the Multi-Processing of the gene files
     """
     assert test_type in ['aars', 'conditions'], "test_type must be 'aars' or 'conditions' to calculate the DE"
     
@@ -147,20 +145,33 @@ def de_csv(csv_path, sinfo, gene_lookup_df, splotch_output_path, test_type, aars
     gene_data = filter(lambda tup: os.path.exists(os.path.join(splotch_output_path, str(tup[0] // 100), f"combined_{tup[0]}.hdf5")),\
                 gene_lookup_df[['gene', 'ensembl']].itertuples(name=None))
 
-    data = [g + (splotch_output_path, sinfo['annotation_mapping'], sinfo['beta_mapping'], test_type, aars, conditions, condition_level) for g in gene_data]
+    if total_genes is None:
+        total_genes = len(gene_data)
+
+    #only operate in specified gene range
+    gene_data = filter(lambda tup: tup[0] >= start_gene and tup[0] < start_gene + total_genes, gene_data)
+
+    #data = [g + (splotch_output_path, sinfo['annotation_mapping'], sinfo['beta_mapping'], test_type, aars, conditions, condition_level) for g in gene_data]
 
     # with ProcessPoolExecutor(max_workers=cores) as exector:
     #     results = exector.map(gene_dict_helper, data)
 
-    with multiprocessing.get_context(start_method).Pool(processes=cores, initializer=start_process, maxtasksperchild=10) as pool:
-        results = pool.imap_unordered(gene_dict_helper, data, chunksize=100)
+    # with multiprocessing.get_context(start_method).Pool(processes=cores, initializer=start_process, maxtasksperchild=10) as pool:
+    #     results = pool.imap_unordered(gene_dict_helper, data, chunksize=100)
+
+    results = []
+
+    for idx, name, ensembl in gene_data:
+        t = (idx, name, ensembl, splotch_output_path, sinfo['annotation_mapping'], sinfo['beta_mapping'], test_type, aars, conditions, condition_level)
+        de_dict = gene_dict_helper(t)
+        results.append(de_dict)
 
     pd.DataFrame(results)[['gene', 'ensembl', 'bf', 'delta']].to_csv(csv_path, index=False)
 
 
 def main():
     args = sys.argv
-    assert len(args) == 10
+    assert len(args) == 11
     csv_path = args[1]
     sinfo = pickle.load(open(args[2], "rb"))
     gene_lookup_df = pd.read_csv(args[3])
@@ -170,9 +181,10 @@ def main():
     aars = args[6].split(",")
     conditions = args[7].split(",")
     condition_level = int(args[8])
-    cores = int(args[9])
-    
-    de_csv(csv_path, sinfo, gene_lookup_df, splotch_output_path, test_type, aars, conditions, condition_level, cores)
+    start_gene = int(args[9])
+    total_genes = int(args[10])
+
+    de_csv(csv_path, sinfo, gene_lookup_df, splotch_output_path, test_type, aars, conditions, condition_level, start_gene, total_genes)
 
 
 if __name__ == "__main__":

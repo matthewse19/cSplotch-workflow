@@ -83,9 +83,40 @@ task diff_exp {
         #TODO move analysis script elsewhere
         curl https://raw.githubusercontent.com/matthewse19/cSplotch-workflow/main/de_analysis.py -O
 
-        python3 de_analysis.py \
-            "~{results_csv_name}" "~{splotch_information_p}" "~{gene_indexes}" "./csplotch_outputs" \
-            "~{test_type}" "~{sep=',' aars}" "~{sep=',' conditions}" "~{condition_level}" "~{num_cpu}"
+        BASE=`basename ~{results_csv_name} .csv`
+
+        TOTAL_GENES=$(( wc -l < ~{gene_indexes} ))
+
+        PARTITION_SIZE=$(( TOTAL_GENES / ~{num_cpu} ))
+
+        REMAINDER = $(( TOTAL_GENES % ~{num_cpu} ))
+
+        START=1
+
+        #"poor-man's" multiprocessing
+        for i in $(seq 1 ~{num_cpu})
+        do
+            PROC_GENES=PARTITION_SIZE
+            #do the remainder of the genes on last process
+            if [ $i == ~{num_cpu} ]; then
+                PROC_GENES=$(( PARTITION_SIZE + REMAINDER ))
+            fi
+
+            python3 de_analysis.py \
+                "$base$i.csv" "~{splotch_information_p}" "~{gene_indexes}" "./csplotch_outputs" \
+                "~{test_type}" "~{sep=',' aars}" "~{sep=',' conditions}" "~{condition_level}" "$START" "$PROC_GENES" &
+                pids[${i}]=$!
+
+            START=$(( START + PROC_GENES ))
+        done
+
+        # wait for all pids
+        for pid in ${pids[*]}; do
+            wait $pid
+        done
+
+        #combine all csvs https://stackoverflow.com/questions/16890582/unixmerge-multiple-csv-files-with-same-header-by-keeping-the-header-of-the-firs
+        awk 'FNR==1 && NR!=1{next;}{print}' *.csv > ~{results_csv_name}
 
         gsutil cp ~{results_csv_name} ~{results_dir_stripped}
     >>>
