@@ -89,14 +89,14 @@ task diff_exp {
 
         PARTITION_SIZE=$(( TOTAL_GENES / ~{num_cpu} ))
 
-        REMAINDER = $(( TOTAL_GENES % ~{num_cpu} ))
+        REMAINDER=$(( TOTAL_GENES % ~{num_cpu} ))
 
         START=1
 
         #"poor-man's" multiprocessing
         for i in $(seq 1 ~{num_cpu})
         do
-            PROC_GENES=PARTITION_SIZE
+            PROC_GENES=$PARTITION_SIZE
             #do the remainder of the genes on last process
             if [ $i == ~{num_cpu} ]; then
                 PROC_GENES=$(( PARTITION_SIZE + REMAINDER ))
