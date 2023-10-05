@@ -85,7 +85,7 @@ task diff_exp {
 
         BASE=`basename ~{results_csv_name} .csv`
 
-        TOTAL_GENES=$(( wc -l < ~{gene_indexes} ))
+        TOTAL_GENES=`wc -l < ~{gene_indexes}`
 
         PARTITION_SIZE=$(( TOTAL_GENES / ~{num_cpu} ))
 
