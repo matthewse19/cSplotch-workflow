@@ -152,7 +152,7 @@ def de_csv(csv_path, sinfo, gene_lookup_df, splotch_output_path, test_type, aars
     # with ProcessPoolExecutor(max_workers=cores) as exector:
     #     results = exector.map(gene_dict_helper, data)
 
-    with multiprocessing.get_context(start_method).Pool(processes=cores, initializer=start_process) as pool:
+    with multiprocessing.get_context(start_method).Pool(processes=cores, initializer=start_process, maxtasksperchild=10) as pool:
         results = pool.imap_unordered(gene_dict_helper, data, chunksize=100)
 
     pd.DataFrame(results)[['gene', 'ensembl', 'bf', 'delta']].to_csv(csv_path, index=False)
