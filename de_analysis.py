@@ -175,7 +175,7 @@ def main():
     csv_path = args[1]
     sinfo = pickle.load(open(args[2], "rb"))
     gene_lookup_df = pd.read_csv(args[3])
-    gene_lookup_df.set_index('gene_index')
+    gene_lookup_df = gene_lookup_df.set_index('gene_index')
     splotch_output_path = args[4]
     test_type = args[5]
     aars = args[6].split(",")
