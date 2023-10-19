@@ -33,7 +33,7 @@ def gene_de_dict(gene_h5, annotation_mapping, beta_mapping, test_type, aars, con
     Returns
     -------
     dict()
-        Keys "bf" (Bayes Factor) and "delta" (log fold change)
+        Keys "bf" (Bayes Factor) and "l2fc" (log2 fold change)
     """
     assert test_type in ['aars', 'conditions'], "test_type must be 'aars' or 'conditions' to calculate the DE"
 
@@ -57,7 +57,7 @@ def gene_de_dict(gene_h5, annotation_mapping, beta_mapping, test_type, aars, con
         sample1 = gene_h5[beta_level]['samples'][:, condition_idxs, first_aar_idx].flatten()
         sample2 = gene_h5[beta_level]['samples'][:, condition_idxs, second_aar_idx].flatten()
         bf = savagedickey(sample1, sample2)
-        delta = np.mean(gene_h5[beta_level]['mean'][condition_idxs, first_aar_idx]) - np.mean(gene_h5[beta_level]['mean'][condition_idxs, second_aar_idx])
+        l2fc = np.log2(np.exp(sample1).mean() / np.exp(sample2).mean())
     else:
         assert len(conditions) in [1,2] and len(aars) > 0, "For conditions test type, must specify either one condition (for one vs rest) or two conditions (one vs one), and an aar"
 
@@ -73,9 +73,9 @@ def gene_de_dict(gene_h5, annotation_mapping, beta_mapping, test_type, aars, con
         sample1 = gene_h5[beta_level]['samples'][:, first_condition_idx, aar_idxs].flatten()
         sample2 = gene_h5[beta_level]['samples'][:, second_condition_idx, aar_idxs].flatten()
         bf = savagedickey(sample1, sample2)
-        delta = np.mean(gene_h5[beta_level]['mean'][first_condition_idx, aar_idxs]) - np.mean(gene_h5[beta_level]['mean'][second_condition_idx, aar_idxs])
+        l2fc = np.log2(np.exp(sample1).mean() / np.exp(sample2).mean())
 
-    return {"bf": bf, "delta": delta}
+    return {"bf": bf, "l2fc": l2fc}
 
 #helper function for multiprocessing gene_de_dict
 def gene_dict_helper(t):
@@ -166,7 +166,7 @@ def de_csv(csv_path, sinfo, gene_lookup_df, splotch_output_path, test_type, aars
         de_dict = gene_dict_helper(t)
         results.append(de_dict)
 
-    pd.DataFrame(results)[['gene', 'ensembl', 'bf', 'delta']].to_csv(csv_path, index=False)
+    pd.DataFrame(results)[['gene', 'ensembl', 'bf', 'l2fc']].to_csv(csv_path, index=False)
 
 
 def main():
