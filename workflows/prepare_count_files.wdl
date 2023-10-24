@@ -9,9 +9,9 @@ workflow Prepare_Count_Files {
         Int disk_size_gb
         Int boot_disk_size_gb = 3
         String root_dir
-        String spaceranger_dir
+        String spaceranger_dir = ""
+        String st_count_dir = ""
         Float min_detection_rate = 0.02
-        Boolean visium = true
     }
     
     call prepare {
@@ -24,8 +24,8 @@ workflow Prepare_Count_Files {
             boot_disk_size_gb = boot_disk_size_gb,
             root_dir = root_dir,
             spaceranger_dir = spaceranger_dir,
+            st_count_dir = st_count_dir,
             min_detection_rate = min_detection_rate,
-            visium = visium
     }
 
     output {
@@ -46,27 +46,37 @@ task prepare {
         Int boot_disk_size_gb = 3
         String root_dir
         String spaceranger_dir
+        String st_count_dir
         Float min_detection_rate = 0.02
-        Boolean visium = true
     }
 
     String root_dir_stripped = sub(root_dir, "/+$", "")
     String spaceranger_dir_stripped = sub(spaceranger_dir, "/+$", "")
-
-
-    String visium_flag = if visium then "-V" else ""
+    String st_count_dir_stripped = sub(st_count_dir, "/+$", "")
 
     command <<<
-        mkdir ./spaceranger_output
-        gsutil -m cp -r "~{spaceranger_dir_stripped}/*" ./spaceranger_output
+
+        if [ "~{spaceranger_dir_stripped}" == "" ]; then
+            mkdir ./counts_output
+            gsutil -m cp -r "~{st_count_dir_stripped}/*" ./counts_output
+
+            splotch_prepare_count_files -c ./counts_output/* -d ~{min_detection_rate} | tee Prepare_Count_Files.log
+            gsutil -m cp -r ./counts_output/*.unified.tsv ~{st_count_dir_stripped}
+
+        else
+            mkdir ./spaceranger_output
+            gsutil -m cp -r "~{spaceranger_dir_stripped}/*" ./spaceranger_output
+            
+            splotch_prepare_count_files -c ./spaceranger_output/* -d ~{min_detection_rate} -V | tee Prepare_Count_Files.log
+
+            cd ./spaceranger_output
+
+            for f in ./*/*.unified.tsv; do gsutil cp "$f" ~{spaceranger_dir_stripped}`cut -c 2- <<< "$f"`; done #remove the leading '.' from the path
+
+            cd ..
+        fi
+
         
-        splotch_prepare_count_files -c ./spaceranger_output/* -d ~{min_detection_rate} ~{visium_flag} | tee Prepare_Count_Files.log
-
-        cd ./spaceranger_output
-
-        for f in ./*/*.unified.tsv; do gsutil cp "$f" ~{spaceranger_dir_stripped}`cut -c 2- <<< "$f"`; done #remove the leading '.' from the path
-
-        cd ..
 
         gsutil cp Prepare_Count_Files.log ~{root_dir_stripped}
 
