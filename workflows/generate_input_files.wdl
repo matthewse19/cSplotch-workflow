@@ -18,6 +18,10 @@ workflow Generate_Input_Files {
         Int maximum_spots_per_tissue = 4992
         String csplotch_input_dir
         Boolean visium = true
+        Boolean compositional = false
+        File? empirical_priors
+        String? sc_group_key
+        String? sc_gene_symbols
     }
     
     call generate {
@@ -37,7 +41,11 @@ workflow Generate_Input_Files {
             minimum_sequencing_depth = minimum_sequencing_depth,
             maximum_spots_per_tissue = maximum_spots_per_tissue,
             csplotch_input_dir = csplotch_input_dir,
-            visium = visium
+            visium = visium,
+            compositional = compositional,
+            empirical_priors = empirical_priors,
+            sc_group_key = sc_group_key,
+            sc_gene_symbols = sc_gene_symbols
     }
 
     output {
@@ -64,6 +72,10 @@ task generate {
         Int maximum_spots_per_tissue = 4992
         String csplotch_input_dir
         Boolean visium = true
+        Boolean compositional = false
+        File? empirical_priors
+        String? sc_group_key
+        String? sc_gene_symbols
     }
 
     String root_dir_stripped = sub(root_dir, "/+$", "")
@@ -72,6 +84,12 @@ task generate {
     String csplotch_input_dir_stripped = sub(csplotch_input_dir, "/+$", "")
 
     String visium_flag = if visium then "-V" else ""
+    String compositional_flag = if compositional then "-p" else ""
+
+    String e_flag = if defined(empirical_priors) then "-e " + empirical_priors else ""
+    String sc_group_flag = if defined(sc_group_key) then "-g " + sc_group_key else ""
+    String sc_gene_flag = if defined(sc_gene_symbols) then "-G " + sc_gene_symbols else ""
+
 
     command <<<
         mkdir ./spaceranger_output
@@ -83,7 +101,8 @@ task generate {
         mkdir ./splotch_inputs
 
         splotch_generate_input_files -c ./spaceranger_output/*/*.unified.tsv -m ~{metadata_file} -s ~{scaling_factor} -l ~{n_levels} \
-            -d ~{minimum_sequencing_depth} -t ~{maximum_spots_per_tissue} ~{visium_flag} -o ./splotch_inputs | tee Generate_Input_Files.log
+            -d ~{minimum_sequencing_depth} -t ~{maximum_spots_per_tissue} ~{visium_flag} -o ./splotch_inputs \
+            ~{compositional_flag} ~{e_flag} ~{sc_group_flag} ~{sc_gene_flag} | tee Generate_Input_Files.log
 
         
         gsutil -m cp -r "./splotch_inputs/*" ~{csplotch_input_dir_stripped}
