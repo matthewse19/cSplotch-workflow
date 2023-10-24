@@ -110,7 +110,7 @@ task generate {
         fi
 
         if [ "~{composition_dir_stripped}" != "" ]; then
-            gsutil -m cp -r "~{composition_dir_stripped}/*" ./spaceranger_output
+            gsutil -m cp -r "~{composition_dir_stripped}/*" ./composition
         fi
 
         gsutil -m cp -r "~{annotation_dir_stripped}/*" ./annotation
