@@ -80,7 +80,6 @@ task generate {
     String visium_flag = if spaceranger_dir != "" then "-V" else ""
     String compositional_flag = if composition_dir != "" then "-p" else ""
 
-    String e_flag = if defined(empirical_priors) then "-e " + empirical_priors else ""
     String sc_group_flag = if defined(sc_group_key) then "-g " + sc_group_key else ""
     String sc_gene_flag = if defined(sc_gene_symbols) then "-G " + sc_gene_symbols else ""
 
@@ -118,14 +117,13 @@ task generate {
 
         mkdir ./splotch_inputs
 
-        if [ "~{visium_flag}" == "" ]; then
+        if [ "~{spaceranger_dir_stripped}" == "" ]; then
             splotch_generate_input_files -c ./st_counts/*.unified.tsv -m ~{metadata_file} -s ~{scaling_factor} -l ~{n_levels} \
-                -d ~{minimum_sequencing_depth} -t ~{maximum_spots_per_tissue} ~{visium_flag} -o ./splotch_inputs \
-                ~{compositional_flag} ~{e_flag} ~{sc_group_flag} ~{sc_gene_flag} | tee Generate_Input_Files.log
+                -d ~{minimum_sequencing_depth} -t ~{maximum_spots_per_tissue} -o ./splotch_inputs \
+                ~{compositional_flag} -e ~{empirical_priors} ~{sc_group_flag} ~{sc_gene_flag} | tee Generate_Input_Files.log
         else
             splotch_generate_input_files -c ./spaceranger_output/*/*.unified.tsv -m ~{metadata_file} -s ~{scaling_factor} -l ~{n_levels} \
-                -d ~{minimum_sequencing_depth} -t ~{maximum_spots_per_tissue} ~{visium_flag} -o ./splotch_inputs \
-                ~{compositional_flag} ~{e_flag} ~{sc_group_flag} ~{sc_gene_flag} | tee Generate_Input_Files.log
+                -d ~{minimum_sequencing_depth} -t ~{maximum_spots_per_tissue} -V -o ./splotch_inputs | tee Generate_Input_Files.log
         fi
 
         
