@@ -99,7 +99,7 @@ task generate {
         mkdir ./composition
         mkdir ./annotation
 
-        if [ "~{spaceranger_dir_stripped}" == "" && "~{st_count_dir_stripped}" == "" ]; then
+        if [ "~{spaceranger_dir_stripped}" == "" ] && [ "~{st_count_dir_stripped}" == "" ]; then
             echo "Either 'spaceranger_dir' or 'st_count_dir' must be defined"
             exit 1
         fi
