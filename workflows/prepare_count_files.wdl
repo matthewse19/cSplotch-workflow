@@ -1,6 +1,19 @@
 version 1.0
 
 workflow Prepare_Count_Files {
+    meta {
+        author: "Matthew Smith-Erb"
+        email: "msmitherb@nygenome.org"
+        description: "# Description of workflow \nFurther description"
+    }
+
+    parameter_meta {
+        memory: {
+            help: "Amount of RAM the VM should request",
+            suggestions: ["64G", "32G", "16G", "8G"]
+        }
+    }
+
     input {
         String docker = "msmitherb/csplotch:latest"
         String zones = "us-central1-a us-central1-b us-central1-c us-central1-f us-east1-b us-east1-c us-east1-d us-west1-a us-west1-b us-west1-c"
