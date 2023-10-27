@@ -2,12 +2,11 @@ version 1.0
 
 workflow Prepare_Count_Files {
     meta {
-        author: "Matthew Smith-Erb"
-        email: "msmitherb@nygenome.org"
         description: "# Description of workflow \nFurther description"
     }
 
     parameter_meta {
+        docker: "Docker image URL"
         memory: {
             help: "Amount of RAM the VM should request",
             suggestions: ["64G", "32G", "16G", "8G"]
