@@ -6,21 +6,26 @@ workflows:
     authors:
       - name: Matthew Smith-Erb
         email: msmitherb@nygenome.org
+        affiliation: New York Genome Center
   - subclass: WDL
     name: Prepare_Count_Files
     primaryDescriptorPath: /workflows/prepare_count_files.wdl
+    readMePath: /documentation/prepare_count_files.md
     authors:
       - name: Matthew Smith-Erb
         email: msmitherb@nygenome.org
+        affiliation: New York Genome Center
   - subclass: WDL
     name: Generate_Input_Files
     primaryDescriptorPath: /workflows/generate_input_files.wdl
     authors:
       - name: Matthew Smith-Erb
         email: msmitherb@nygenome.org
+        affiliation: New York Genome Center
   - subclass: WDL
     name: Gene_Diff_Exp
     primaryDescriptorPath: /workflows/gene_diff_exp.wdl
     authors:
       - name: Matthew Smith-Erb
         email: msmitherb@nygenome.org
+        affiliation: New York Genome Center
