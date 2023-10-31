@@ -1,0 +1,57 @@
+#!/Users/msmitherb/anaconda3/bin/python3
+
+'''
+This script can be placed in the pre-push git hook to sync the Broad Methods Repository with the git project.
+The method names and paths in the main section should be updated with new workflows/methods.
+'''
+
+import os
+import firecloud.api as fapi
+
+
+def get_latest_snapshot(namespace, method_name):
+    response = fapi.list_repository_methods(namespace, method_name)
+    response.raise_for_status()
+    json = response.json()
+    latest = max(d['snapshotId'] for d in json)
+    return latest
+
+def get_method_readme(method_name, readme_path):
+    with open(readme_path, 'r') as readme:
+        #section starts with line after'## method_name' and ends at the next '##' or '#'
+        lines = readme.readlines()
+        method_line = f"## {method_name}\n"
+        first_idx = lines.index(method_line) + 1
+        assert first_idx > 0, "Couldn't find the '## method' line in the readme"
+
+        contains_header = ["###" not in line and (line[0] == "#" or line[:2] == "##") for line in lines[first_idx:]]
+        last_idx = first_idx + contains_header.index(True)
+        assert last_idx > first_idx, "Couldn't find end '##' or '#'"
+
+        return "".join(lines[first_idx: last_idx])
+    
+def write_doc_file(documentation, doc_path):
+    with open(doc_path, 'w') as f:
+        f.write(documentation)
+
+def update_documentation(namespace, method_name, readme_path):
+    documentation = get_method_readme(method_name, readme_path)
+    wdl_path = os.path.join("./workflows", f"{method_name.lower()}.wdl")
+
+    doc_path = f"./documentation/{method_name.lower()}.md"
+    write_doc_file(documentation, doc_path)
+
+    response = fapi.update_repository_method(namespace, method_name, "", wdl_path, doc=doc_path)
+    response.raise_for_status()
+
+if __name__ == "__main__":
+    namespace = "cSplotch-Workflow"
+    readme_path = "./README.md"
+
+    print("Updating Broad Methods Repository namespace", namespace)
+
+    update_documentation(namespace, "Prepare_Count_Files", readme_path)
+    update_documentation(namespace, "Generate_Input_Files", readme_path)
+    update_documentation(namespace, "Run_cSplotch", readme_path)
+    update_documentation(namespace, "Gene_Diff_Exp", readme_path)
+
