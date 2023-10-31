@@ -1,6 +1,6 @@
 version 1.0
 
-workflow Run_Splotch {
+workflow Run_cSplotch {
     input {
         String docker = "msmitherb/csplotch:latest"
         String zones = "us-central1-a us-central1-b us-central1-c us-central1-f us-east1-b us-east1-c us-east1-d us-west1-a us-west1-b us-west1-c"
