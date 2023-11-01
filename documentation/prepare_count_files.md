@@ -6,9 +6,9 @@ _root_dir_ - gsutil URI (e.g. "gs://[bucket_uri]/[parent_dir]") to the root dire
 
 _min_detection_rate_ (default 0.02) - Minimum expression rate over every spot in all samples that a gene must have in order to be kept.
 
-_spaceranger_dir_ - The parent directory containing each sample's Spaceranger folder (not used for ST data).
+_spaceranger_dir_ - The gsutil URI of the parent directory containing each sample's Spaceranger folder (not used for ST data).
 
-_st_count_dir_ - The parent directory containing each sample's count file (not used for Visium data).
+_st_count_dir_ - The gsutil URI of the parent directory containing each sample's count file (not used for Visium data).
 
 
 ### Outputs

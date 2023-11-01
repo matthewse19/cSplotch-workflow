@@ -1,6 +1,3 @@
-## description up here
-## multiple lines
-
 version 1.0
 
 workflow Prepare_Count_Files {

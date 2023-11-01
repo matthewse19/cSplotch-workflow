@@ -16,14 +16,14 @@ workflow Run_cSplotch {
         Int num_chains = 4
         String csplotch_input_dir
         String csplotch_output_dir
-        Float gene_timeout_hrs = 12
+        Float gene_timeout_hrs = 20
     }
     
-    #add extra offset if splotch_gene_idxs is defined bc its first element will be 0
+    #add extra offset if splotch_gene_idxs is not defined bc its first element will be 0
     Int start_idx = if length(splotch_gene_idxs) > 0 then 0 else 1
     #if both total_genes is defined and splotch_gene_idxs has elements, overwrite total_genes to array's length
     Int? defined_total_genes = if defined(total_genes) && length(splotch_gene_idxs) == 0 then total_genes else length(splotch_gene_idxs)
-    Array[Int] defined_splotch_gene_idxs = if length(splotch_gene_idxs) > 0 then splotch_gene_idxs else range(total_genes + 1)
+    Array[Int] defined_splotch_gene_idxs = if length(splotch_gene_idxs) > 0 then splotch_gene_idxs else range(defined_total_genes + 1)
 
     # "large_groups" will process floor(total_genes / max_vms) + 1 genes
     # total_genes mod max_vms is the number of "large groups"
@@ -83,7 +83,7 @@ task run_splotch {
         Int num_chains
         Float gene_timeout_hrs
         Int tries_per_gene = 1
-        Int vm_total_retries = 5
+        Int vm_total_retries = 3
     }
 
     String csplotch_input_dir_stripped = sub(csplotch_input_dir, "/+$", "")
