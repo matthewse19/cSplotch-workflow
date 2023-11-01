@@ -166,8 +166,8 @@ task generate {
         CODE
 
         else
-            echo "gene_index,ensembl" > gene_index.csv
-            awk -F '\t' '{print NR - 1","$1}' < $( ls ./st_counts/*.unified.tsv | head -n1; ) >> gene_index.csv
+            echo "gene_index,ensembl" > gene_indexes.csv
+            awk -F '\t' '{print NR - 1","$1}' < $( ls ./st_counts/*.unified.tsv | head -n1; ) >> gene_indexes.csv
         fi
         gsutil cp ./gene_indexes.csv ~{root_dir_stripped}
 
