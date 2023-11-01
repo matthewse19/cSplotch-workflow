@@ -169,8 +169,12 @@ task generate {
         idx_df.to_csv("gene_indexes.csv", index=True)
         CODE
 
-        gsutil cp ./gene_indexes.csv ~{root_dir_stripped}
+        else
+            echo "gene_index,ensembl" > gene_index.csv
+            awk -F '\t' '{print NR - 1","$1}' < $( ls ./st_counts/*.unified.tsv | head -n1; ) >> gene_index.csv
         fi
+        gsutil cp ./gene_indexes.csv ~{root_dir_stripped}
+
     >>>
   
     output {

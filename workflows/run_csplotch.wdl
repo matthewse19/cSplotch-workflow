@@ -6,7 +6,7 @@ workflow Run_cSplotch {
         String zones = "us-central1-a us-central1-b us-central1-c us-central1-f us-east1-b us-east1-c us-east1-d us-west1-a us-west1-b us-west1-c"
         Int num_cpu = 4
         Int preemptible = 1
-        String memory = "1G"
+        String memory
         Int disk_size_gb
         Int max_concurrent_VMs
         Int bootDiskSizeGb = 3
