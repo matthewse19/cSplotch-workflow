@@ -89,6 +89,7 @@ task generate {
     String no_car_flag = if no_car then "-n" else ""
     String no_zip_flag = if no_zip then "-z" else ""
 
+    String empirical_flag = if defined(empirical_priors) then "-e" else ""
     String sc_group_flag = if defined(sc_group_key) then "-g " + sc_group_key else ""
     String sc_gene_flag = if defined(sc_gene_symbols) then "-G " + sc_gene_symbols else ""
 
@@ -114,8 +115,10 @@ task generate {
 
         if [ "~{spaceranger_dir_stripped}" != "" ]; then
             gsutil -m cp -r "~{spaceranger_dir_stripped}/*" ./spaceranger_output
+            COUNTS="./spaceranger_output/*/*.unified.tsv"
         else
             gsutil -m cp -r "~{st_count_dir_stripped}/*" ./st_counts
+            COUNTS="./st_counts/*.unified.tsv"
         fi
 
         if [ "~{composition_dir_stripped}" != "" ]; then
@@ -126,16 +129,9 @@ task generate {
 
         mkdir ./splotch_inputs
 
-        if [ "~{spaceranger_dir_stripped}" == "" ]; then
-            splotch_generate_input_files -c ./st_counts/*.unified.tsv -m ~{metadata_file} -s ~{scaling_factor} -l ~{n_levels} \
-                -d ~{minimum_sequencing_depth} -t ~{maximum_spots_per_tissue} -o ./splotch_inputs ~{no_car_flag} ~{no_zip_flag} \
-                ~{compositional_flag} -e ~{empirical_priors} ~{sc_group_flag} ~{sc_gene_flag} | tee Generate_Input_Files.log
-        else
-            splotch_generate_input_files -c ./spaceranger_output/*/*.unified.tsv -m ~{metadata_file} -s ~{scaling_factor} -l ~{n_levels} \
-                -d ~{minimum_sequencing_depth} -t ~{maximum_spots_per_tissue} -V -o ./splotch_inputs 
-                ~{no_car_flag} ~{no_zip_flag} | tee Generate_Input_Files.log
-        fi
-
+        splotch_generate_input_files -c $COUNTS -m ~{metadata_file} -s ~{scaling_factor} -l ~{n_levels} \
+                -d ~{minimum_sequencing_depth} -t ~{maximum_spots_per_tissue} ~{visium_flag} -o ./splotch_inputs ~{no_car_flag} ~{no_zip_flag} \
+                ~{compositional_flag} ~{empirical_flag} ~{empirical_priors} ~{sc_group_flag} ~{sc_gene_flag} | tee Generate_Input_Files.log
         
         gsutil -m cp -r "./splotch_inputs/*" ~{csplotch_input_dir_stripped}
         gsutil cp ./Generate_Input_Files.log ~{root_dir_stripped}
