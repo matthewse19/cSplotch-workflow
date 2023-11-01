@@ -21,7 +21,7 @@ An example row in a metadata file for a three level Visium data run would look l
 
 _annotation_dir_ - The gsutil URI of the annotation directory.
 
-_csplotch_input_dir_ - The gsutil URI of an empty directory in the _root_dir_ where the gene input files will be placed.
+_csplotch_input_dir_ - The gsutil URI of an empty directory in the _root_dir_ where the gene input files will be placed, including _information.p_ which is a pickled Python dictionary that has useful metadata and model parameters about the run.
 
 _metadata_file_ - The metadata file that in the above structure.
 
@@ -36,6 +36,8 @@ _composition_dir_ (optional) - The gsutil URI to the directory containing the co
 _empirical_priors_ (optional) - An AnnData (HDF5 format) file with single cell gene expression to inform the model's priors of the expression in each cell type (only for compositional data). See 
 
 _maximum_spots_per_tissue_ (default 4992) - Number of spots threshold for identifying overlapping tissue sections. 4992 covers an entire Visium array.
+
+_memory_ (default "16G") - Amount of RAM.
 
 _minimum_sequencing_depth_ (default 100) - Minimum number of UMIs per spot.
 

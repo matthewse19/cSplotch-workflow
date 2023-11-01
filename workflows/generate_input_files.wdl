@@ -2,7 +2,7 @@ version 1.0
 
 workflow Generate_Input_Files {
     input {
-        String docker = "msmitherb/csplotch:latest"
+        String docker = "us-central1-docker.pkg.dev/techinno/images/csplotch_img:latest"
         String zones = "us-central1-a us-central1-b us-central1-c us-central1-f us-east1-b us-east1-c us-east1-d us-west1-a us-west1-b us-west1-c"
         Int preemptible = 2
         String memory = "16G"
@@ -60,7 +60,7 @@ workflow Generate_Input_Files {
 
 task generate {
     input {
-        String docker = "msmitherb/csplotch:latest"
+        String docker
         String zones = "us-central1-a us-central1-b us-central1-c us-central1-f us-east1-b us-east1-c us-east1-d us-west1-a us-west1-b us-west1-c"
         Int preemptible = 2
         String memory = "16G"
@@ -167,7 +167,7 @@ task generate {
 
         else
             echo "gene_index,ensembl" > gene_indexes.csv
-            awk -F '\t' '{print NR - 1","$1}' < $( ls ./st_counts/*.unified.tsv | head -n1; ) >> gene_indexes.csv
+            awk -F '\t' 'NR>1 {print NR - 1","$1}' < $( ls ./st_counts/*.unified.tsv | head -n1; ) >> gene_indexes.csv
         fi
         gsutil cp ./gene_indexes.csv ~{root_dir_stripped}
 
