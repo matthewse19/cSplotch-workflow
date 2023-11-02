@@ -99,9 +99,10 @@ def gene_de_dict(gene_h5, sinfo, test_type, aars, conditions, level=1, cell_type
         ix_grid1 = np.ix_([True] * n_samples, condition_idxs, aar_idxs, first_type_idx)
         ix_grid2 = np.ix_([True] * n_samples, condition_idxs, aar_idxs, second_type_idx)
     
-
-    sample1 = gene_h5[beta_level]['samples'][ix_grid1].flatten()
-    sample2 = gene_h5[beta_level]['samples'][ix_grid2].flatten()
+    #hdf5 doesn't support fancy indexing with ix_
+    np_data = np.array(gene_h5[beta_level]['samples'])
+    sample1 = np_data[ix_grid1].flatten()
+    sample2 = np_data[ix_grid2].flatten()
     bf = savagedickey(sample1, sample2)
     l2fc = np.log2(np.exp(sample1).mean() / np.exp(sample2).mean())
     return {"bf": bf, "l2fc": l2fc}
