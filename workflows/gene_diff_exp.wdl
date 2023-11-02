@@ -17,6 +17,7 @@ workflow Gene_Diff_Exp {
         String test_type
         Array[String]+ aars
         Array[String]+ conditions
+        Array[String] cell_types = []
         Int condition_level 
     }
 
@@ -43,6 +44,7 @@ workflow Gene_Diff_Exp {
             aars = aars,
             conditions = conditions,
             condition_level = condition_level,
+            cell_types = cell_types
     }
 
     output {
@@ -68,6 +70,7 @@ task diff_exp {
         String test_type
         Array[String]+ aars
         Array[String]+ conditions
+        Array[String] cell_types
         Int condition_level 
     }
 
@@ -104,7 +107,7 @@ task diff_exp {
 
             python3 de_analysis.py \
                 "$base$i.csv" "~{splotch_information_p}" "~{gene_indexes}" "./csplotch_outputs" \
-                "~{test_type}" "~{sep=',' aars}" "~{sep=',' conditions}" "~{condition_level}" "$START" "$PROC_GENES" &
+                "~{test_type}" "~{sep=',' aars}" "~{sep=',' conditions}" "~{condition_level}" "~{sep=',' cell_types}" "$START" "$PROC_GENES" &
                 pids[${i}]=$!
 
             START=$(( START + PROC_GENES ))
