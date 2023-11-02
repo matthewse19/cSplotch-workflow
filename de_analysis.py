@@ -187,6 +187,9 @@ def de_csv(csv_path, sinfo, gene_lookup_df, splotch_output_path, test_type, aars
         assert set(cell_types).issubset(set(all_cell_types)), \
             f"The cell_types must be a list of elements from the full list of possible cell types: {all_cell_types}"
 
+    #set 'gene' column to blank if it DNE
+    if 'gene' not in gene_lookup_df.columns:
+        gene_lookup_df['gene'] = ""
 
     #only operate on genes with existing summary files
     gene_data = filter(lambda tup: os.path.exists(os.path.join(splotch_output_path, str(tup[0] // 100), f"combined_{tup[0]}.hdf5")),\
@@ -220,7 +223,7 @@ def main():
     aars = args[6].split(",")
     conditions = args[7].split(",")
     condition_level = int(args[8])
-    cell_types = args[9].split(",")
+    cell_types = args[9].split(",") if args[9] != "" else None
     start_gene = int(args[10])
     total_genes = int(args[11])
 
