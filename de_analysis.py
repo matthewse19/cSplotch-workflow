@@ -7,6 +7,7 @@ import pickle
 import multiprocessing
 from concurrent.futures import ProcessPoolExecutor
 import sys
+import gc
 
 def gene_de_dict(gene_h5, sinfo, test_type, aars, conditions, level=1, cell_types=None):
     """Computes differential expression of the given gene with the specified tests
@@ -208,6 +209,7 @@ def de_csv(csv_path, sinfo, gene_lookup_df, splotch_output_path, test_type, aars
         t = (idx, name, ensembl, splotch_output_path, sinfo, test_type, aars, conditions, condition_level, cell_types)
         de_dict = gene_dict_helper(t)
         results.append(de_dict)
+        gc.collect()
 
     pd.DataFrame(results)[['gene', 'ensembl', 'bf', 'l2fc']].to_csv(csv_path, index=False)
 
