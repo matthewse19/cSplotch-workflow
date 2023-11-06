@@ -17,6 +17,7 @@ workflow Run_cSplotch {
         String csplotch_input_dir
         String csplotch_output_dir
         Float gene_timeout_hrs = 20
+        Boolean compositional_data
     }
     
     #add extra offset if splotch_gene_idxs is not defined bc its first element will be 0
@@ -53,7 +54,8 @@ workflow Run_cSplotch {
                 csplotch_output_dir = csplotch_output_dir,
                 num_samples = num_samples,
                 num_chains = num_chains,
-                gene_timeout_hrs = gene_timeout_hrs
+                gene_timeout_hrs = gene_timeout_hrs,
+                compositional_data = compositional_data
         }
 
     }
@@ -84,6 +86,7 @@ task run_splotch {
         Float gene_timeout_hrs
         Int tries_per_gene = 1
         Int vm_total_retries = 3
+        Boolean compositional_data
     }
 
     String csplotch_input_dir_stripped = sub(csplotch_input_dir, "/+$", "")
@@ -120,9 +123,13 @@ task run_splotch {
                 mkdir -p ./data_directory/$GENE_DIR
                 gsutil cp $GENE_FILE ./data_directory/$GENE_DIR/
                 
-                
-                timeout ~{gene_timeout_hrs}h splotch -g $GENE_IDX -d ./data_directory -o ./csplotch_outputs -b $SPLOTCH_BIN -n ~{num_samples} -c ~{num_chains} -s
-                GENE_STATUS=`echo $?`
+                if [[ ~{compositional_data} == "true" ]]; then
+                    timeout ~{gene_timeout_hrs}h splotch -g $GENE_IDX -d ./data_directory -o ./csplotch_outputs -b $CSPLOTCH_BIN -n ~{num_samples} -c ~{num_chains} -s
+                    GENE_STATUS=`echo $?`
+                else
+                    timeout ~{gene_timeout_hrs}h splotch -g $GENE_IDX -d ./data_directory -o ./csplotch_outputs -b $SPLOTCH_BIN -n ~{num_samples} -c ~{num_chains} -s
+                    GENE_STATUS=`echo $?`
+                fi
                 
                 if [ $GENE_STATUS == 124 ]; then
 
