@@ -38,9 +38,9 @@ _disk\_size\_gb_ - Size in GB that the VM should allocate for storage.
 
 _boot\_disk\_size\_gb_ (default 3) - Size of the disk where the docker image is booted.
 
-_docker_ (default "msmitherb/csplotch:latest") - Docker image to use for the VM (it must have cSplotch and CmdStan installed). 
+_docker_ (default "us-central1-docker.pkg.dev/techinno/images/csplotch_img:latest") - Docker image to use for the VM (it must have cSplotch and CmdStan installed and use google-cloud-cli as a base, see the [csplotch_img](https://github.com/matthewse19/cSplotch-workflow/blob/main/Dockerfile) default Dockerfile). 
 
-_memory_ - Amount of RAM to use.
+_memory_ (e.g. "16G" for 16GB) - Amount of RAM to use.
 
 _preemptible_ (default 2) - Number of times to preempt a VM before switching to an on-demand machine.
 
@@ -52,6 +52,8 @@ This workflow creates a .unified.tsv file for each sample, which ensures that th
 
 ### Inputs
 _root_dir_ - gsutil URI (e.g. "gs://[bucket_uri]/[parent_dir]") to the root directory containing the cSplotch metadata file and the Spaceranger/ST directory. A _Prepare_Count_Files.log_ file will be placed in this directory after the Workflow is completed successfully. 
+
+_memory_ (default "16G") - Amount of RAM.
 
 _min_detection_rate_ (default 0.02) - Minimum expression rate over every spot in all samples that a gene must have in order to be kept.
 
@@ -116,6 +118,8 @@ _empirical_priors_ (optional) - An AnnData (HDF5 format) file with single cell g
 
 _maximum_spots_per_tissue_ (default 4992) - Number of spots threshold for identifying overlapping tissue sections. 4992 covers an entire Visium array.
 
+_memory_ (default "16G") - Amount of RAM.
+
 _minimum_sequencing_depth_ (default 100) - Minimum number of UMIs per spot.
 
 _no_car_ (default false) - Disable the conditional autoregressive prior.
@@ -142,6 +146,8 @@ This file has the columns "gene_index", "ensembl", "type" and "gene" for a Visiu
 
 ### Inputs
 
+_compositional_data_ - A boolean set to _true_ or _false_, dictating whether to run the compositional cSplotch model or the non-compositional Splotch model.
+
 _csplotch_input_dir_ - The gsutil URI of the directory within the _root_dir_ where the gene input files exist.
 
 _csplotch_output_dir_ - The gsutil URI of the directory within the _root_dir_ where the summarized output files will be placed (if a gene's output file already exists, then the workflow will skip the gene).
@@ -158,7 +164,7 @@ _num_samples_ (default 500) - The number of times each chain will draw a sample 
 
 _splotch_gene_idxs_ (optional) - The integer indexes of the genes to run cSplotch on. If left blank, the first _total_genes_ number of genes will be ran.
 
-_total_genes_ (optional) - The number of genes to run cSplotch on. Defaults to the length of _splotch_gene_idxs_ if defined, otherwise 1 if also left blank. 
+_total_genes_ (optional) - The number of genes to run cSplotch on. Defaults to the length of _splotch_gene_idxs_ if defined, otherwise 0 if also left blank. 
 
 _tries_per_gene_ (default 1) - The number of timeouts alloted per gene before skipping to the next.
 
@@ -168,10 +174,41 @@ _vm_total_retries_ (default 3) - The total number of allowed timeouts across all
 
 ## Gene_Diff_Exp
 
+This workflow calculates the [Bayes Factor](https://en.wikipedia.org/wiki/Bayes_factor) and log<sub>2</sub> fold change between two experimental groups. The groups can be specified by any level condition, anatomical annotation regions (AAR), or single cell types for compositional data.
+
+The group corresponding with _test_type_ ("aars", "conditions" or "cells") must have a length of one (for one group vs the rest) or a length of two (to directly compare the two groups). The other groups are then used to subset the data.
+
+For example, if _test_type_ = "aars", _condition_level_ = 1, _conditions_=["ALS"], and _aars_ = ["Layer_1", "Layer_2"], then the differential gene expression is calculated for spots labeled as "Layer_1" and "Layer_2" for ALS samples.
+
 ### Inputs
 
+_aars_ - When _test_type_ = "aars", these must be the two AARs to test against each other or one to test against the rest. Otherwise, the list is the specified AARs to subset the data by.
+
+_condition_level_ - The condition/beta level that _conditions_ specifies.
+
+_conditions_ - When _test_type_ = "conditions", these must be the two conditions to test against each other or one to test against the rest. Otherwise, the list is the specified conditions to subset the data by. These conditions must also be valid conditions for the specified _condition_level_ of the data.
+
+_csplotch_output_dir_ - The gsutil URI of the directory where the summarized output files will be placed (if a gene's output file already exists, then the workflow will skip the gene).
+
+_gene_indexes_ - The file named "gene_indexes.csv" that is produced by the **Generate_Input_Files** workflow. This file is used as a lookup for the gene and ensembl names of each cSplotch gene index.
+
+_results_csv_name_ - Name of the results file that will be placed in the Google cloud _results_dir_ directory.
+
+_results_dir_ - The gsutil URI of the directory where the results CSV file will be placed.
+
+_splotch_information_p_ -  The pickled Python dictionary with cSplotch metadata that is output during the **Generate_Input_Files** workflow and typically located in the cSplotch input directory.
+
+_test_type_ - Must be "conditions", "aars", or "cell_types" for compositional data. The corresponding variable list be must 
+
+_cell_types_ (optional) - When _test_type_ = "cell_types", these must be the two cell types to test against each other or one to test against the rest. Otherwise, the list is the specified cell types to subset the data by.
+
+_memory_ (default "32G") - Amount of RAM.
+
+_num_cpu_ (default 1) - Number of CPUs to allocate to the VM. The workflow takes advantage of multi-processing and will drastically speed up with more CPUs.
 
 ### Outputs
+
+_de_results_ - The string of the gsutil URI pointing to the results file. Can be set to the column of a Terra data table for easy retrieval.
 
 # References
 [1] Ståhl, Patrik L., et al. ["Visualization and analysis of gene expression in tissue sections by spatial transcriptomics."](https://science.sciencemag.org/content/353/6294/78) *Science* 353.6294 (2016): 78-82.

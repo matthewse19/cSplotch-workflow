@@ -123,7 +123,7 @@ task run_splotch {
                 mkdir -p ./data_directory/$GENE_DIR
                 gsutil cp $GENE_FILE ./data_directory/$GENE_DIR/
                 
-                if [[ ~{compositional_data} == "true" ]]; then
+                if [[ "~{compositional_data}" == "true" ]]; then
                     timeout ~{gene_timeout_hrs}h splotch -g $GENE_IDX -d ./data_directory -o ./csplotch_outputs -b $CSPLOTCH_BIN -n ~{num_samples} -c ~{num_chains} -s
                     GENE_STATUS=`echo $?`
                 else

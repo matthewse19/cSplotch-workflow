@@ -3,6 +3,7 @@ workflows:
   - subclass: WDL
     name: Run_cSplotch
     primaryDescriptorPath: /workflows/run_csplotch.wdl
+    readMePath: /documentation/run_csplotch.md
     authors:
       - name: Matthew Smith-Erb
         email: msmitherb@nygenome.org
@@ -18,6 +19,7 @@ workflows:
   - subclass: WDL
     name: Generate_Input_Files
     primaryDescriptorPath: /workflows/generate_input_files.wdl
+    readMePath: /documentation/generate_input_files.md
     authors:
       - name: Matthew Smith-Erb
         email: msmitherb@nygenome.org
@@ -25,6 +27,7 @@ workflows:
   - subclass: WDL
     name: Gene_Diff_Exp
     primaryDescriptorPath: /workflows/gene_diff_exp.wdl
+    readMePath: /documentation/gene_diff_exp.md
     authors:
       - name: Matthew Smith-Erb
         email: msmitherb@nygenome.org
