@@ -16,7 +16,7 @@ This workspace contains the Terra workflows to run cSplotch, a hierarchical gene
 We support the original ST array design (1007 spots, a diameter of 100 μm, and a center-to-center distance of 200 μm) by [Spatial Transcriptomics AB](https://spatialtranscriptomics.com), as well as [Visium Spatial Gene Expression Solution](https://www.10xgenomics.com/spatial-transcriptomics/) by [10x Genomics, Inc.](https://www.10xgenomics.com), interfacing directly with file formats output by [Spaceranger and Loupe Browser](https://support.10xgenomics.com/spatial-gene-expression/software/pipelines/latest/output/overview).
 
 
-For more details on the cSplotch probablistic model, or to run cSplotch, visit the GitHub page https://github.com/adaly/cSplotch.
+For more details on the cSplotch probablistic model, or to run cSplotch locally, visit the GitHub page https://github.com/adaly/cSplotch.
 
 
 ## cSplotch Worfklows
@@ -31,8 +31,8 @@ The following must run successfully in order:
 
 # Workflow descriptions and inputs
 
-## Runtime input parameters
-The following input parameters are present in all of the cSplotch Terra workflows. For a more in-depth explanation, see https://cromwell.readthedocs.io/en/stable/RuntimeAttributes/.
+## Global runtime input parameters
+The following input parameters are present in all of the cSplotch Terra workflows. For a more in-depth explanation of each parameter, see https://cromwell.readthedocs.io/en/stable/RuntimeAttributes/.
 
 _disk\_size\_gb_ - Size in GB that the VM should allocate for storage.
 
@@ -55,7 +55,7 @@ _root_dir_ - gsutil URI (e.g. "gs://[bucket_uri]/[parent_dir]") to the root dire
 
 _memory_ (default "16G") - Amount of RAM.
 
-_min_detection_rate_ (default 0.02) - Minimum expression rate over every spot in all samples that a gene must have in order to be kept.
+_min_detection_rate_ (default 0.02) - Minimum expression rate over every labeled spot in all samples that a gene must have in order to be kept.
 
 _spaceranger_dir_ - The gsutil URI of the parent directory containing each sample's Spaceranger folder (not used for ST data).
 
@@ -76,7 +76,7 @@ _genes_kept_ - this.genes_kept
 
 _median_seq_depth_ - this.median_seq_depth
 
-After Prepare_Count_Files is completed successfully, the workflow will automatically populate these fields  in the selected row in the data table.
+After **Prepare_Count_Files** is completed successfully, the workflow will automatically populate these fields  in the selected row in the data table.
 
 ## Generate_Input_Files
 
@@ -102,19 +102,19 @@ An example row in a metadata file for a three level Visium data run would look l
 
 _annotation_dir_ - The gsutil URI of the annotation directory.
 
-_csplotch_input_dir_ - The gsutil URI of an empty directory in the _root_dir_ where the gene input files will be placed, including _information.p_ which is a pickled Python dictionary that has useful metadata and model parameters about the run.
+_csplotch_input_dir_ - The gsutil URI of an empty directory in the _root_dir_ where the gene input files will be placed and a file named _information.p_ which is a pickled Python dictionary that has useful metadata and model parameters about the run.
 
-_metadata_file_ - The metadata file that in the above structure.
+_metadata_file_ - The metadata file that is in the above structure.
 
 _n_levels_ - The number of condition levels present in the metadata (1, 2, or 3).
 
-_root_dir_ - The gsutil URI of the root directory containing the directories _annotation_dir_, _spaceranger_dir_/_st_count_dir_, _csplotch_input_dir_, and optionally _composition_dir_. A _Generate_Input_Files.log_ file will be placed in this directory after the Workflow is completed successfully. 
+_root_dir_ - The gsutil URI of the root directory containing the directories _annotation_dir_, _spaceranger_dir_/_st_count_dir_, _csplotch_input_dir_, and optionally _composition_dir_. A _Generate_Input_Files.log_ file will be placed in this directory after the workflow is completed successfully. 
 
-_scaling_factor_ - The median sequencing depth over all spots which is found during **Prepare_Count_Files**. Select "Run workflow(s) with inputs defined by data table" and enter the value "this.median_seq_depth" to reference the value stored in data table's selected row.
+_scaling_factor_ - The median sequencing depth over all spots which is found during **Prepare_Count_Files**. Select "Run workflow(s) with inputs defined by data table" and enter the value "this.median_seq_depth" to reference the value stored in data table's selected row. This value can also be found in _Prepare_Count_Files.log_ in the _root_dir_.
 
 _composition_dir_ (optional) - The gsutil URI to the directory containing the composition files, referenced in the metadata file.
 
-_empirical_priors_ (optional) - An AnnData (HDF5 format) file with single cell gene expression to inform the model's priors of the expression in each cell type (only for compositional data). See 
+_empirical_priors_ (optional) - An AnnData (HDF5 format) file with single cell gene expression to inform the model's priors of the expression in each cell type (only for compositional data). 
 
 _maximum_spots_per_tissue_ (default 4992) - Number of spots threshold for identifying overlapping tissue sections. 4992 covers an entire Visium array.
 
@@ -124,11 +124,11 @@ _minimum_sequencing_depth_ (default 100) - Minimum number of UMIs per spot.
 
 _no_car_ (default false) - Disable the conditional autoregressive prior.
 
-_no_zip_ (default false) - Use the Poisson likelihood instead of the zero-inflated Poisson likelihood.
+_no_zip_ (default false) - Use the Poisson likelihood instead of the default zero-inflated Poisson likelihood.
 
-_sc_gene_symbols_ (optional) - Key in single-cell AnnData.var corresponding to gene names in ST count/Visium data (required when _empirical_priors_ is given; must match gene names in count files).
+_sc_gene_symbols_ (optional) - Key in `AnnData.var` of the _empirical_priors_ file corresponding to gene names in ST count/Visium data (required when _empirical_priors_ is given; must match gene names in count files).
 
-_sc_group_key_ (optional) - Key in single-cell AnnData.obs containing cell type annotations (required when _empirical_priors_ is given; must match cell type naming in annotation files).
+_sc_group_key_ (optional) - Key in `AnnData.obs` of the _empirical_priors_ file corresponding to cell type annotations (required when _empirical_priors_ is given; must match cell type naming in annotation files).
 
 _spaceranger_dir_ - The gsutil URI of the parent directory containing each sample's Spaceranger folder (not used for ST data).
 
@@ -136,23 +136,23 @@ _st_count_dir_ - The gsutil URI of the parent directory containing each sample's
 
 ### Outputs
 
-Enter the following to easily access the "genes_indexes.csv" file that gets generated.
+Enter the following in the output fields to easily access the "genes_indexes.csv" file that gets generated:
 
 _gene_indexes_ - this.gene_indexes
 
-This file has the columns "gene_index", "ensembl", "type" and "gene" for a Visium workflow. It is a useful reference when wanting to run individual genes at a time in **Run_cSplotch**.
+This file has the columns "gene_index", "ensembl", "type" and "gene". It is a useful reference when wanting to run individual genes at a time in **Run_cSplotch** and is also needed in the **plotting_and_analysis.ipynb** notebook.
 
 ## Run_cSplotch
 
 ### Inputs
 
-_compositional_data_ - A boolean set to _true_ or _false_, dictating whether to run the compositional cSplotch model or the non-compositional Splotch model.
+_compositional_data_ - A boolean set to _true_ or _false_, indicating whether to run the compositional cSplotch model or the non-compositional Splotch model.
 
 _csplotch_input_dir_ - The gsutil URI of the directory within the _root_dir_ where the gene input files exist.
 
-_csplotch_output_dir_ - The gsutil URI of the directory within the _root_dir_ where the summarized output files will be placed (if a gene's output file already exists, then the workflow will skip the gene).
+_csplotch_output_dir_ - The gsutil URI of the directory within the _root_dir_ where the summarized output files will be placed (if a gene's output file already exists, then the workflow will skip over the gene).
 
-_max_concurrent_VMs_ - The number of VMs to distribute the individual genes across. 
+_max_concurrent_VMs_ - The number of VMs to distribute the set of genes across. 
 
 _gene_timeout_hrs_ (default 20) - The number of hours the cSplotch model will run on a single gene before restarting or moving on to the next gene.
 
@@ -164,7 +164,7 @@ _num_samples_ (default 500) - The number of times each chain will draw a sample 
 
 _splotch_gene_idxs_ (optional) - The integer indexes of the genes to run cSplotch on. If left blank, the first _total_genes_ number of genes will be ran.
 
-_total_genes_ (optional) - The number of genes to run cSplotch on. Defaults to the length of _splotch_gene_idxs_ if defined, otherwise 0 if also left blank. 
+_total_genes_ (optional) - The number of genes to run cSplotch on. Defaults to the length of _splotch_gene_idxs_ if the list is defined, otherwise 0 if also left blank. 
 
 _tries_per_gene_ (default 1) - The number of timeouts alloted per gene before skipping to the next.
 
@@ -176,9 +176,9 @@ _vm_total_retries_ (default 3) - The total number of allowed timeouts across all
 
 This workflow calculates the [Bayes Factor](https://en.wikipedia.org/wiki/Bayes_factor) and log<sub>2</sub> fold change between two experimental groups. The groups can be specified by any level condition, anatomical annotation regions (AAR), or single cell types for compositional data.
 
-The group corresponding with _test_type_ ("aars", "conditions" or "cells") must have a length of one (for one group vs the rest) or a length of two (to directly compare the two groups). The other groups are then used to subset the data.
+The group corresponding with _test_type_ ("aars", "conditions" or "cells") must have a length of one (for one group vs the rest) or a length of two (to directly compare the two groups). The other groups that aren't of type _test_type_ are then used to subset the data.
 
-For example, if _test_type_ = "aars", _condition_level_ = 1, _conditions_=["ALS"], and _aars_ = ["Layer_1", "Layer_2"], then the differential gene expression is calculated for spots labeled as "Layer_1" and "Layer_2" for ALS samples.
+For example, if _test_type_ = "aars", _condition_level_ = 1, _conditions_=["ALS"], and _aars_ = ["Layer_1", "Layer_2"], then the differential gene expression is calculated between the two groups of spots labeled as "Layer_1" and "Layer_2" for ALS samples.
 
 ### Inputs
 
@@ -200,7 +200,7 @@ _splotch_information_p_ -  The pickled Python dictionary with cSplotch metadata 
 
 _test_type_ - Must be "conditions", "aars", or "cell_types" for compositional data. The corresponding variable list be must 
 
-_cell_types_ (optional) - When _test_type_ = "cell_types", these must be the two cell types to test against each other or one to test against the rest. Otherwise, the list is the specified cell types to subset the data by.
+_cell_types_ (optional) - When _test_type_ = "cell_types", these must be the two cell types to test against each other or one to test against the rest. Otherwise, the list is the specified cell types to subset the data by. This is only applicable for compositional data.
 
 _memory_ (default "32G") - Amount of RAM.
 
@@ -209,6 +209,20 @@ _num_cpu_ (default 1) - Number of CPUs to allocate to the VM. The workflow takes
 ### Outputs
 
 _de_results_ - The string of the gsutil URI pointing to the results file. Can be set to the column of a Terra data table for easy retrieval.
+
+# Downstream analysis
+
+There is an example notebook named **plotting_and_analysis.ipynb** found in the "ANALYSIS" tab of this workspace. This notebook demonstrates how to find the most differentially expressed genes from the CSVs produced by **Diff_Gene_Exp** and also provides example uses of each visualization function in `splotch.utils_plotting`. 
+
+The following plotting/analysis tasks are included:
+
+- Visualize KDEs of the posterior distributions grouped by combinations of conditions, AARs, and cell-types
+- Plot a gene's raw expression levels and cSplotch's lambda values on a specified array
+- Identify gene-gene coexpression modules using the cSplotch lambda values (as done in [[1]](#references))
+- Plot the scaled gene expression of genes in each module on a specified array
+- Visualize the standardized gene expression of genes in a module grouped by AAR or condition
+- Identify coexpression submodules using an scRNA AnnData file
+
 
 # References
 [1] Ståhl, Patrik L., et al. ["Visualization and analysis of gene expression in tissue sections by spatial transcriptomics."](https://science.sciencemag.org/content/353/6294/78) *Science* 353.6294 (2016): 78-82.

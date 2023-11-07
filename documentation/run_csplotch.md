@@ -1,6 +1,8 @@
 
 ### Inputs
 
+_compositional_data_ - A boolean set to _true_ or _false_, dictating whether to run the compositional cSplotch model or the non-compositional Splotch model.
+
 _csplotch_input_dir_ - The gsutil URI of the directory within the _root_dir_ where the gene input files exist.
 
 _csplotch_output_dir_ - The gsutil URI of the directory within the _root_dir_ where the summarized output files will be placed (if a gene's output file already exists, then the workflow will skip the gene).

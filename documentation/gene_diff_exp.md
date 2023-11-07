@@ -7,11 +7,11 @@ For example, if _test_type_ = "aars", _condition_level_ = 1, _conditions_=["ALS"
 
 ### Inputs
 
-_aars_ - When _test_type_ = "aars", these must be the two AARs to test against each other. Otherwise, the list is the specified AARs to subset the data by.
+_aars_ - When _test_type_ = "aars", these must be the two AARs to test against each other or one to test against the rest. Otherwise, the list is the specified AARs to subset the data by.
 
 _condition_level_ - The condition/beta level that _conditions_ specifies.
 
-_conditions_ - When _test_type_ = "conditions", these must be the two conditions to test against each other. Otherwise, the list is the specified conditions to subset the data by. These conditions must also be valid conditions for the specified _condition_level_ of the data.
+_conditions_ - When _test_type_ = "conditions", these must be the two conditions to test against each other or one to test against the rest. Otherwise, the list is the specified conditions to subset the data by. These conditions must also be valid conditions for the specified _condition_level_ of the data.
 
 _csplotch_output_dir_ - The gsutil URI of the directory where the summarized output files will be placed (if a gene's output file already exists, then the workflow will skip the gene).
 
@@ -23,11 +23,15 @@ _results_dir_ - The gsutil URI of the directory where the results CSV file will 
 
 _splotch_information_p_ -  The pickled Python dictionary with cSplotch metadata that is output during the **Generate_Input_Files** workflow and typically located in the cSplotch input directory.
 
-_test_type_ - 
+_test_type_ - Must be "conditions", "aars", or "cell_types" for compositional data. The corresponding variable list be must 
 
-_memory_ (default "32G")
+_cell_types_ (optional) - When _test_type_ = "cell_types", these must be the two cell types to test against each other or one to test against the rest. Otherwise, the list is the specified cell types to subset the data by.
 
-_num_cpu_ (default 2)
+_memory_ (default "32G") - Amount of RAM.
+
+_num_cpu_ (default 1) - Number of CPUs to allocate to the VM. The workflow takes advantage of multi-processing and will drastically speed up with more CPUs.
 
 ### Outputs
+
+_de_results_ - The string of the gsutil URI pointing to the results file. Can be set to the column of a Terra data table for easy retrieval.
 

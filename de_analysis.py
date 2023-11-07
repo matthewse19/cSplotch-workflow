@@ -19,7 +19,7 @@ def gene_de_dict(gene_h5, sinfo, test_type, aars, conditions, level=1, cell_type
     sinfo : Obj
         Unpickled information.p
     test_type : str
-        aspect of model to test, either 'aars' or 'conditions'
+        aspect of model to test, either 'aars', 'conditions', or 'cell_types'
     aars : list[str]
         When test_type='aars', one AAR tests that region against the rest,
         and two AARs test them against each other.
