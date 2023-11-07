@@ -6,7 +6,7 @@ _root_dir_ - gsutil URI (e.g. "gs://[bucket_uri]/[parent_dir]") to the root dire
 
 _memory_ (default "16G") - Amount of RAM.
 
-_min_detection_rate_ (default 0.02) - Minimum expression rate over every spot in all samples that a gene must have in order to be kept.
+_min_detection_rate_ (default 0.02) - Minimum expression rate over every labeled spot in all samples that a gene must have in order to be kept.
 
 _spaceranger_dir_ - The gsutil URI of the parent directory containing each sample's Spaceranger folder (not used for ST data).
 
@@ -27,5 +27,5 @@ _genes_kept_ - this.genes_kept
 
 _median_seq_depth_ - this.median_seq_depth
 
-After Prepare_Count_Files is completed successfully, the workflow will automatically populate these fields  in the selected row in the data table.
+After **Prepare_Count_Files** is completed successfully, the workflow will automatically populate these fields  in the selected row in the data table.
 

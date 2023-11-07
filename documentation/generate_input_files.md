@@ -21,19 +21,19 @@ An example row in a metadata file for a three level Visium data run would look l
 
 _annotation_dir_ - The gsutil URI of the annotation directory.
 
-_csplotch_input_dir_ - The gsutil URI of an empty directory in the _root_dir_ where the gene input files will be placed, including _information.p_ which is a pickled Python dictionary that has useful metadata and model parameters about the run.
+_csplotch_input_dir_ - The gsutil URI of an empty directory in the _root_dir_ where the gene input files will be placed and a file named _information.p_ which is a pickled Python dictionary that has useful metadata and model parameters about the run.
 
-_metadata_file_ - The metadata file that in the above structure.
+_metadata_file_ - The metadata file that is in the above structure.
 
 _n_levels_ - The number of condition levels present in the metadata (1, 2, or 3).
 
-_root_dir_ - The gsutil URI of the root directory containing the directories _annotation_dir_, _spaceranger_dir_/_st_count_dir_, _csplotch_input_dir_, and optionally _composition_dir_. A _Generate_Input_Files.log_ file will be placed in this directory after the Workflow is completed successfully. 
+_root_dir_ - The gsutil URI of the root directory containing the directories _annotation_dir_, _spaceranger_dir_/_st_count_dir_, _csplotch_input_dir_, and optionally _composition_dir_. A _Generate_Input_Files.log_ file will be placed in this directory after the workflow is completed successfully. 
 
-_scaling_factor_ - The median sequencing depth over all spots which is found during **Prepare_Count_Files**. Select "Run workflow(s) with inputs defined by data table" and enter the value "this.median_seq_depth" to reference the value stored in data table's selected row.
+_scaling_factor_ - The median sequencing depth over all spots which is found during **Prepare_Count_Files**. Select "Run workflow(s) with inputs defined by data table" and enter the value "this.median_seq_depth" to reference the value stored in data table's selected row. This value can also be found in _Prepare_Count_Files.log_ in the _root_dir_.
 
 _composition_dir_ (optional) - The gsutil URI to the directory containing the composition files, referenced in the metadata file.
 
-_empirical_priors_ (optional) - An AnnData (HDF5 format) file with single cell gene expression to inform the model's priors of the expression in each cell type (only for compositional data). See 
+_empirical_priors_ (optional) - An AnnData (HDF5 format) file with single cell gene expression to inform the model's priors of the expression in each cell type (only for compositional data). 
 
 _maximum_spots_per_tissue_ (default 4992) - Number of spots threshold for identifying overlapping tissue sections. 4992 covers an entire Visium array.
 
@@ -43,11 +43,11 @@ _minimum_sequencing_depth_ (default 100) - Minimum number of UMIs per spot.
 
 _no_car_ (default false) - Disable the conditional autoregressive prior.
 
-_no_zip_ (default false) - Use the Poisson likelihood instead of the zero-inflated Poisson likelihood.
+_no_zip_ (default false) - Use the Poisson likelihood instead of the default zero-inflated Poisson likelihood.
 
-_sc_gene_symbols_ (optional) - Key in single-cell AnnData.var corresponding to gene names in ST count/Visium data (required when _empirical_priors_ is given; must match gene names in count files).
+_sc_gene_symbols_ (optional) - Key in `AnnData.var` of the _empirical_priors_ file corresponding to gene names in ST count/Visium data (required when _empirical_priors_ is given; must match gene names in count files).
 
-_sc_group_key_ (optional) - Key in single-cell AnnData.obs containing cell type annotations (required when _empirical_priors_ is given; must match cell type naming in annotation files).
+_sc_group_key_ (optional) - Key in `AnnData.obs` of the _empirical_priors_ file corresponding to cell type annotations (required when _empirical_priors_ is given; must match cell type naming in annotation files).
 
 _spaceranger_dir_ - The gsutil URI of the parent directory containing each sample's Spaceranger folder (not used for ST data).
 
@@ -55,9 +55,9 @@ _st_count_dir_ - The gsutil URI of the parent directory containing each sample's
 
 ### Outputs
 
-Enter the following to easily access the "genes_indexes.csv" file that gets generated.
+Enter the following in the output fields to easily access the "genes_indexes.csv" file that gets generated:
 
 _gene_indexes_ - this.gene_indexes
 
-This file has the columns "gene_index", "ensembl", "type" and "gene" for a Visium workflow. It is a useful reference when wanting to run individual genes at a time in **Run_cSplotch**.
+This file has the columns "gene_index", "ensembl", "type" and "gene". It is a useful reference when wanting to run individual genes at a time in **Run_cSplotch** and is also needed in the **plotting_and_analysis.ipynb** notebook.
 
