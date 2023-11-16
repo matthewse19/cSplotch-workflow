@@ -16,8 +16,9 @@ This workspace contains the Terra workflows to run cSplotch, a hierarchical gene
 We support the original ST array design (1007 spots, a diameter of 100 μm, and a center-to-center distance of 200 μm) by [Spatial Transcriptomics AB](https://spatialtranscriptomics.com), as well as [Visium Spatial Gene Expression Solution](https://www.10xgenomics.com/spatial-transcriptomics/) by [10x Genomics, Inc.](https://www.10xgenomics.com), interfacing directly with file formats output by [Spaceranger and Loupe Browser](https://support.10xgenomics.com/spatial-gene-expression/software/pipelines/latest/output/overview).
 
 
-For more details on the cSplotch probablistic model, or to run cSplotch locally, visit the GitHub page https://github.com/adaly/cSplotch.
+For more details on the cSplotch probablistic model, or to run cSplotch locally, visit the GitHub page https://github.com/adaly/cSplotch. A diagram of the cSplotch model from the GitHub is illustrated below:
 
+![Hierarchical models](https://github.com/adaly/cSplotch/blob/bd7f77dfc7414f432f6e05ab9789b7aa593b12b4/cSplotch_Model.png?raw=true)
 
 ## cSplotch Worfklows
 
@@ -46,20 +47,26 @@ _preemptible_ (default 2) - Number of times to preempt a VM before switching to 
 
 _zones_ (default "us-central1-a us-central1-b... us-east1-a us-east1-b... us-west1-a us-west1-b...") - Ordered list of zone preference. 
 
+
+Many of the workflows also have inputs which supposed to be the Google Cloud GS URIs pointing to folders (e.g. _root_dir_, _spaceranger_dir_, _st_cout_dir_, etc).
+These strings must start with _gs://_ and are then followed by the URI of the folder. To find the URI of specific directory, nagivate to https://console.cloud.google.com/storage/browser and find the directory within the bucket. The full URI (without the prefix _gs://_) of the folder can be copied as shown below:
+
+![GS URI](https://github.com/matthewse19/cSplotch-workflow/blob/main/documentation/copy_gs_uri.png?raw=true)
+
 ## Prepare_Count_Files
 
 This workflow creates a .unified.tsv file for each sample, which ensures that the gene indexing across all samples is consistent and also filters out lowly expressed genes. If Visium was used, only fill in the _spaceranger_dir_ input, otherwise for ST data, fill in _st_count_dir_.
 
 ### Inputs
-_root_dir_ - gsutil URI (e.g. "gs://[bucket_uri]/[parent_dir]") to the root directory containing the cSplotch metadata file and the Spaceranger/ST directory. A _Prepare_Count_Files.log_ file will be placed in this directory after the Workflow is completed successfully. 
+_root_dir_ - GS URI (e.g. "gs://[bucket_uri]/[parent_dir]") to the root directory containing the cSplotch metadata file and the Spaceranger/ST directory. A _Prepare_Count_Files.log_ file will be placed in this directory after the Workflow is completed successfully. 
 
 _memory_ (default "16G") - Amount of RAM.
 
 _min_detection_rate_ (default 0.02) - Minimum expression rate over every labeled spot in all samples that a gene must have in order to be kept.
 
-_spaceranger_dir_ - The gsutil URI of the parent directory containing each sample's Spaceranger folder (not used for ST data).
+_spaceranger_dir_ - The GS URI of the parent directory containing each sample's Spaceranger folder (not used for ST data).
 
-_st_count_dir_ - The gsutil URI of the parent directory containing each sample's count file (not used for Visium data).
+_st_count_dir_ - The GS URI of the parent directory containing each sample's count file (not used for Visium data).
 
 
 ### Outputs
@@ -100,19 +107,19 @@ An example row in a metadata file for a three level Visium data run would look l
 
 ### Inputs
 
-_annotation_dir_ - The gsutil URI of the annotation directory.
+_annotation_dir_ - The GS URI of the annotation directory.
 
-_csplotch_input_dir_ - The gsutil URI of an empty directory in the _root_dir_ where the gene input files will be placed and a file named _information.p_ which is a pickled Python dictionary that has useful metadata and model parameters about the run.
+_csplotch_input_dir_ - The GS URI of an empty directory in the _root_dir_ where the gene input files will be placed and a file named _information.p_ which is a pickled Python dictionary that has useful metadata and model parameters about the run.
 
 _metadata_file_ - The metadata file that is in the above structure.
 
 _n_levels_ - The number of condition levels present in the metadata (1, 2, or 3).
 
-_root_dir_ - The gsutil URI of the root directory containing the directories _annotation_dir_, _spaceranger_dir_/_st_count_dir_, _csplotch_input_dir_, and optionally _composition_dir_. A _Generate_Input_Files.log_ file will be placed in this directory after the workflow is completed successfully. 
+_root_dir_ - The GS URI of the root directory containing the directories _annotation_dir_, _spaceranger_dir_/_st_count_dir_, _csplotch_input_dir_, and optionally _composition_dir_. A _Generate_Input_Files.log_ file will be placed in this directory after the workflow is completed successfully. 
 
 _scaling_factor_ - The median sequencing depth over all spots which is found during **Prepare_Count_Files**. Select "Run workflow(s) with inputs defined by data table" and enter the value "this.median_seq_depth" to reference the value stored in data table's selected row. This value can also be found in _Prepare_Count_Files.log_ in the _root_dir_.
 
-_composition_dir_ (optional) - The gsutil URI to the directory containing the composition files, referenced in the metadata file.
+_composition_dir_ (optional) - The GS URI to the directory containing the composition files, referenced in the metadata file.
 
 _empirical_priors_ (optional) - An AnnData (HDF5 format) file with single cell gene expression to inform the model's priors of the expression in each cell type (only for compositional data). 
 
@@ -130,9 +137,9 @@ _sc_gene_symbols_ (optional) - Key in `AnnData.var` of the _empirical_priors_ fi
 
 _sc_group_key_ (optional) - Key in `AnnData.obs` of the _empirical_priors_ file corresponding to cell type annotations (required when _empirical_priors_ is given; must match cell type naming in annotation files).
 
-_spaceranger_dir_ - The gsutil URI of the parent directory containing each sample's Spaceranger folder (not used for ST data).
+_spaceranger_dir_ - The GS URI of the parent directory containing each sample's Spaceranger folder (not used for ST data).
 
-_st_count_dir_ - The gsutil URI of the parent directory containing each sample's count file (not used for Visium data).
+_st_count_dir_ - The GS URI of the parent directory containing each sample's count file (not used for Visium data).
 
 ### Outputs
 
@@ -148,9 +155,9 @@ This file has the columns "gene_index", "ensembl", "type" and "gene". It is a us
 
 _compositional_data_ - A boolean set to _true_ or _false_, indicating whether to run the compositional cSplotch model or the non-compositional Splotch model.
 
-_csplotch_input_dir_ - The gsutil URI of the directory within the _root_dir_ where the gene input files exist.
+_csplotch_input_dir_ - The GS URI of the directory within the _root_dir_ where the gene input files exist.
 
-_csplotch_output_dir_ - The gsutil URI of the directory within the _root_dir_ where the summarized output files will be placed (if a gene's output file already exists, then the workflow will skip over the gene).
+_csplotch_output_dir_ - The GS URI of the directory within the _root_dir_ where the summarized output files will be placed (if a gene's output file already exists, then the workflow will skip over the gene).
 
 _max_concurrent_VMs_ - The number of VMs to distribute the set of genes across. 
 
@@ -188,13 +195,13 @@ _condition_level_ - The condition/beta level that _conditions_ specifies.
 
 _conditions_ - When _test_type_ = "conditions", these must be the two conditions to test against each other or one to test against the rest. Otherwise, the list is the specified conditions to subset the data by. These conditions must also be valid conditions for the specified _condition_level_ of the data.
 
-_csplotch_output_dir_ - The gsutil URI of the directory where the summarized output files will be placed (if a gene's output file already exists, then the workflow will skip the gene).
+_csplotch_output_dir_ - The GS URI of the directory where the summarized output files will be placed (if a gene's output file already exists, then the workflow will skip the gene).
 
 _gene_indexes_ - The file named "gene_indexes.csv" that is produced by the **Generate_Input_Files** workflow. This file is used as a lookup for the gene and ensembl names of each cSplotch gene index.
 
 _results_csv_name_ - Name of the results file that will be placed in the Google cloud _results_dir_ directory.
 
-_results_dir_ - The gsutil URI of the directory where the results CSV file will be placed.
+_results_dir_ - The GS URI of the directory where the results CSV file will be placed.
 
 _splotch_information_p_ -  The pickled Python dictionary with cSplotch metadata that is output during the **Generate_Input_Files** workflow and typically located in the cSplotch input directory.
 
@@ -208,7 +215,7 @@ _num_cpu_ (default 1) - Number of CPUs to allocate to the VM. The workflow takes
 
 ### Outputs
 
-_de_results_ - The string of the gsutil URI pointing to the results file. Can be set to the column of a Terra data table for easy retrieval.
+_de_results_ - The string of the GS URI pointing to the results file. Can be set to the column of a Terra data table for easy retrieval.
 
 # Downstream analysis
 

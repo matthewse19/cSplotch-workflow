@@ -13,13 +13,13 @@ _condition_level_ - The condition/beta level that _conditions_ specifies.
 
 _conditions_ - When _test_type_ = "conditions", these must be the two conditions to test against each other or one to test against the rest. Otherwise, the list is the specified conditions to subset the data by. These conditions must also be valid conditions for the specified _condition_level_ of the data.
 
-_csplotch_output_dir_ - The gsutil URI of the directory where the summarized output files will be placed (if a gene's output file already exists, then the workflow will skip the gene).
+_csplotch_output_dir_ - The GS URI of the directory where the summarized output files will be placed (if a gene's output file already exists, then the workflow will skip the gene).
 
 _gene_indexes_ - The file named "gene_indexes.csv" that is produced by the **Generate_Input_Files** workflow. This file is used as a lookup for the gene and ensembl names of each cSplotch gene index.
 
 _results_csv_name_ - Name of the results file that will be placed in the Google cloud _results_dir_ directory.
 
-_results_dir_ - The gsutil URI of the directory where the results CSV file will be placed.
+_results_dir_ - The GS URI of the directory where the results CSV file will be placed.
 
 _splotch_information_p_ -  The pickled Python dictionary with cSplotch metadata that is output during the **Generate_Input_Files** workflow and typically located in the cSplotch input directory.
 
@@ -33,5 +33,5 @@ _num_cpu_ (default 1) - Number of CPUs to allocate to the VM. The workflow takes
 
 ### Outputs
 
-_de_results_ - The string of the gsutil URI pointing to the results file. Can be set to the column of a Terra data table for easy retrieval.
+_de_results_ - The string of the GS URI pointing to the results file. Can be set to the column of a Terra data table for easy retrieval.
 
