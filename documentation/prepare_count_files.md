@@ -17,7 +17,7 @@ _st_count_dir_ - The GS URI of the parent directory containing each sample's cou
 Before running the workflow, create a data table with a blank row so the outputs get stored. This can be done in the workspace by going to the Data tab > IMPORT DATA > Upload TSV > TEXT IMPORT > Copy and paste the following:
 ```
 entity:cSplotch_run_id
-1
+mouse_colon
 ```
 Now back in the **Prepare_Count_Files** workflow, ensure that "Run workflow(s) with inputs defined by data table" is chosen and click 'SELECT DATA' to choose the cSplotch run ID. In the outputs tab, enter the following for each output variable (or choose any other descriptive column name):
 
