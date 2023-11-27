@@ -114,7 +114,12 @@ task generate {
         fi
 
         if [ "~{spaceranger_dir_stripped}" != "" ]; then
-            gsutil -m cp -r "~{spaceranger_dir_stripped}/*" ./spaceranger_output
+            gsutil cp "~{spaceranger_dir_stripped}/*/*.unified.tsv" ./spaceranger_output
+            for f in spaceranger_output/*.unified.tsv
+            do
+                mkdir spaceranger_output/$(basename "$f" .unified.tsv)
+                mv $f spaceranger_output/$(basename "$f" .unified.tsv)
+            done
             COUNTS="./spaceranger_output/*/*.unified.tsv"
         else
             gsutil -m cp -r "~{st_count_dir_stripped}/*" ./st_counts
