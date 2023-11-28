@@ -117,8 +117,9 @@ task generate {
             gsutil cp "~{spaceranger_dir_stripped}/*/*.unified.tsv" ./spaceranger_output
             for f in spaceranger_output/*.unified.tsv
             do
-                mkdir spaceranger_output/$(basename "$f" .unified.tsv)
+                mkdir -p spaceranger_output/$(basename "$f" .unified.tsv)/outs/spatial
                 mv $f spaceranger_output/$(basename "$f" .unified.tsv)
+                gsutil cp ~{spaceranger_dir_stripped}/$(basename "$f" .unified.tsv)/outs/spatial/*.csv spaceranger_output/$(basename "$f" .unified.tsv)/outs/spatial
             done
             COUNTS="./spaceranger_output/*/*.unified.tsv"
         else

@@ -69,8 +69,14 @@ task prepare {
 
         else
             mkdir ./spaceranger_output
-            gsutil -m cp -r "~{spaceranger_dir_stripped}/*" ./spaceranger_output
-            
+            for url in $(gsutil ls ~{spaceranger_dir_stripped})
+            do
+                mkdir -p ./spaceranger_output/$(basename "$url")/outs/spatial
+                mkdir -p ./spaceranger_output/$(basename "$url")/outs/filtered_feature_bc_matrix
+                gsutil cp ~{spaceranger_dir_stripped}/$(basename "$url")/outs/spatial/*.csv spaceranger_output/$(basename "$url")/outs/spatial
+                gsutil cp ~{spaceranger_dir_stripped}/$(basename "$url")/outs/filtered_feature_bc_matrix/* spaceranger_output/$(basename "$url")/outs/filtered_feature_bc_matrix
+            done
+
             splotch_prepare_count_files -c ./spaceranger_output/* -d ~{min_detection_rate} -V | tee Prepare_Count_Files.log
 
             cd ./spaceranger_output
