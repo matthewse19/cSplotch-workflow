@@ -23,6 +23,8 @@ _annotation_dir_ - The GS URI of the annotation directory.
 
 _csplotch_input_dir_ - The GS URI of an empty directory in the _root_dir_ where the gene input files will be placed and a file named _information.p_ which is a pickled Python dictionary that has useful metadata and model parameters about the run.
 
+_disk_size_gb_ (default 120) - Size in GB that the VM should allocate for storage.
+
 _metadata_file_ - The metadata file that is in the above structure.
 
 _n_levels_ - The number of condition levels present in the metadata (1, 2, or 3).
@@ -37,7 +39,7 @@ _empirical_priors_ (optional) - An AnnData (HDF5 format) file with single cell g
 
 _maximum_spots_per_tissue_ (default 4992) - Number of spots threshold for identifying overlapping tissue sections. 4992 covers an entire Visium array.
 
-_memory_ (default "16G") - Amount of RAM.
+_memory_ (default "50G") - Amount of RAM. 50G should be sufficient for 32 Visium samples.
 
 _minimum_sequencing_depth_ (default 100) - Minimum number of UMIs per spot.
 
@@ -49,9 +51,10 @@ _sc_gene_symbols_ (optional) - Key in `AnnData.var` of the _empirical_priors_ fi
 
 _sc_group_key_ (optional) - Key in `AnnData.obs` of the _empirical_priors_ file corresponding to cell type annotations (required when _empirical_priors_ is given; must match cell type naming in annotation files).
 
-_spaceranger_dir_ - The GS URI of the parent directory containing each sample's Spaceranger folder (not used for ST data).
+_spaceranger_dir_ - The GS URI (e.g. "gs://[bucket_uri]/[parent_dir]/spaceranger_output/") of the parent directory containing each sample's Spaceranger folder (not used for ST data).
 
-_st_count_dir_ - The GS URI of the parent directory containing each sample's count file (not used for Visium data).
+_st_count_dir_ - The GS URI (e.g. "gs://[bucket_uri]/[parent_dir]/counts/") of the parent directory containing each sample's count file (not used for Visium data).
+
 
 ### Outputs
 

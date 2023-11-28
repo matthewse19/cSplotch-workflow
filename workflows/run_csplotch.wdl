@@ -16,7 +16,7 @@ workflow Run_cSplotch {
         Int num_chains = 4
         String csplotch_input_dir
         String csplotch_output_dir
-        Float gene_timeout_hrs = 20
+        Float gene_timeout_hrs = 24
         Boolean compositional_data
     }
     

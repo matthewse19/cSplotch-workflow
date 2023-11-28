@@ -58,15 +58,18 @@ These strings must start with _gs://_ and are then followed by the URI of the fo
 This workflow creates a .unified.tsv file for each sample, which ensures that the gene indexing across all samples is consistent and also filters out lowly expressed genes. If Visium was used, only fill in the _spaceranger_dir_ input, otherwise for ST data, fill in _st_count_dir_.
 
 ### Inputs
+
+_disk_size_gb_ - Size in GB that the VM should allocate for storage. Approximately 2GB for each sample should be sufficient.
+
 _root_dir_ - GS URI (e.g. "gs://[bucket_uri]/[parent_dir]") to the root directory containing the cSplotch metadata file and the Spaceranger/ST directory. A _Prepare_Count_Files.log_ file will be placed in this directory after the Workflow is completed successfully. 
 
-_memory_ (default "16G") - Amount of RAM.
+_memory_ (default "50G") - Amount of RAM. 50G for 32 Visium samples and 80G for 50 Visium samples should be sufficient.
 
 _min_detection_rate_ (default 0.02) - Minimum expression rate over every labeled spot in all samples that a gene must have in order to be kept.
 
-_spaceranger_dir_ - The GS URI of the parent directory containing each sample's Spaceranger folder (not used for ST data).
+_spaceranger_dir_ - The GS URI (e.g. "gs://[bucket_uri]/[parent_dir]/spaceranger_output/") of the parent directory containing each sample's Spaceranger folder (not used for ST data).
 
-_st_count_dir_ - The GS URI of the parent directory containing each sample's count file (not used for Visium data).
+_st_count_dir_ - The GS URI (e.g. "gs://[bucket_uri]/[parent_dir]/counts/") of the parent directory containing each sample's count file (not used for Visium data).
 
 
 ### Outputs
@@ -111,6 +114,8 @@ _annotation_dir_ - The GS URI of the annotation directory.
 
 _csplotch_input_dir_ - The GS URI of an empty directory in the _root_dir_ where the gene input files will be placed and a file named _information.p_ which is a pickled Python dictionary that has useful metadata and model parameters about the run.
 
+_disk_size_gb_ (default 120) - Size in GB that the VM should allocate for storage.
+
 _metadata_file_ - The metadata file that is in the above structure.
 
 _n_levels_ - The number of condition levels present in the metadata (1, 2, or 3).
@@ -125,7 +130,7 @@ _empirical_priors_ (optional) - An AnnData (HDF5 format) file with single cell g
 
 _maximum_spots_per_tissue_ (default 4992) - Number of spots threshold for identifying overlapping tissue sections. 4992 covers an entire Visium array.
 
-_memory_ (default "16G") - Amount of RAM.
+_memory_ (default "50G") - Amount of RAM. 50G should be sufficient for 32 Visium samples.
 
 _minimum_sequencing_depth_ (default 100) - Minimum number of UMIs per spot.
 
@@ -137,9 +142,10 @@ _sc_gene_symbols_ (optional) - Key in `AnnData.var` of the _empirical_priors_ fi
 
 _sc_group_key_ (optional) - Key in `AnnData.obs` of the _empirical_priors_ file corresponding to cell type annotations (required when _empirical_priors_ is given; must match cell type naming in annotation files).
 
-_spaceranger_dir_ - The GS URI of the parent directory containing each sample's Spaceranger folder (not used for ST data).
+_spaceranger_dir_ - The GS URI (e.g. "gs://[bucket_uri]/[parent_dir]/spaceranger_output/") of the parent directory containing each sample's Spaceranger folder (not used for ST data).
 
-_st_count_dir_ - The GS URI of the parent directory containing each sample's count file (not used for Visium data).
+_st_count_dir_ - The GS URI (e.g. "gs://[bucket_uri]/[parent_dir]/counts/") of the parent directory containing each sample's count file (not used for Visium data).
+
 
 ### Outputs
 
@@ -151,6 +157,10 @@ This file has the columns "gene_index", "ensembl", "type" and "gene". It is a us
 
 ## Run_cSplotch
 
+This workflow runs the cSplotch model independently for each gene. The model is parallelized by running multiple VMs independetly, set by the _max_concurrent_vms_ input parameter. It is recommendend to run a few genes first, (i.e. set _splotch_gene_idxs_ to [1, 2, 3, 4, 5]) to estimate the minimum amount of memory and disk size required, and the amount of time each gene will take. The amount of time for each gene can be reduced be lowering the number of samples (175 is the lowest one should go). If the genes are completed in less than 24 hours, then _preemptible_ can be left at 2 so that the VM may be randomly forced to restart (and forced to restart at 24hrs) but will also cost significantly less. Otherwise, set _preemptible_ to be 0 so that the VM won't get restarted.
+
+The workflow will create summarized output files for each gene (and not replace existing files withing _csplotch_output_dir_). The outputs are grouped into subdirectories which each contain 100 summary files.
+
 ### Inputs
 
 _compositional_data_ - A boolean set to _true_ or _false_, indicating whether to run the compositional cSplotch model or the non-compositional Splotch model.
@@ -159,15 +169,19 @@ _csplotch_input_dir_ - The GS URI of the directory within the _root_dir_ where t
 
 _csplotch_output_dir_ - The GS URI of the directory within the _root_dir_ where the summarized output files will be placed (if a gene's output file already exists, then the workflow will skip over the gene).
 
+_disk_size_gb_ - Size in GB that the VM should allocate for storage. 20GB should be sufficient for 32 Visium samples.
+
 _max_concurrent_VMs_ - The number of VMs to distribute the set of genes across. 
 
-_gene_timeout_hrs_ (default 20) - The number of hours the cSplotch model will run on a single gene before restarting or moving on to the next gene.
+_gene_timeout_hrs_ (default 24) - The number of hours the cSplotch model will run on a single gene before restarting or moving on to the next gene.
 
 _num_chains_ (default 4) - The number of independent MCMC chains to run.
 
 _num_cpu_ (default 4) - The number of CPUs each VM will request. Should match the number of chains for optimal performance.
 
 _num_samples_ (default 500) - The number of times each chain will draw a sample in the MCMC process.
+
+_preemptible_ (default 2) - Number of times to preempt a VM before switching to an on-demand machine. Preemptible machines will be forced to preempt/restart after 24 hours.
 
 _splotch_gene_idxs_ (optional) - The integer indexes of the genes to run cSplotch on. If left blank, the first _total_genes_ number of genes will be ran.
 
@@ -176,8 +190,6 @@ _total_genes_ (optional) - The number of genes to run cSplotch on. Defaults to t
 _tries_per_gene_ (default 1) - The number of timeouts alloted per gene before skipping to the next.
 
 _vm_total_retries_ (default 3) - The total number of allowed timeouts across all genes ran on the VM plus the number of preemptions.
-
-### Outputs
 
 ## Gene_Diff_Exp
 

@@ -5,8 +5,8 @@ workflow Generate_Input_Files {
         String docker = "us-central1-docker.pkg.dev/techinno/images/csplotch_img:latest"
         String zones = "us-central1-a us-central1-b us-central1-c us-central1-f us-east1-b us-east1-c us-east1-d us-west1-a us-west1-b us-west1-c"
         Int preemptible = 2
-        String memory = "16G"
-        Int disk_size_gb
+        String memory = "50G"
+        Int disk_size_gb = 120
         Int boot_disk_size_gb = 3
         String root_dir
         String spaceranger_dir = ""
