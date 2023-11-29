@@ -173,13 +173,15 @@ _disk_size_gb_ - Size in GB that the VM should allocate for storage. 20GB should
 
 _max_concurrent_VMs_ - The number of VMs to distribute the set of genes across. 
 
+_memory_ - The amount of memory allocated to each VM instanced. "16G" should be sufficient for 32 Visium arrays, but a pilot run on a few genes should be done first to obtain the minimum threshold for the amount of memory required.
+
 _gene_timeout_hrs_ (default 24) - The number of hours the cSplotch model will run on a single gene before restarting or moving on to the next gene.
 
 _num_chains_ (default 4) - The number of independent MCMC chains to run.
 
 _num_cpu_ (default 4) - The number of CPUs each VM will request. Should match the number of chains for optimal performance.
 
-_num_samples_ (default 500) - The number of times each chain will draw a sample in the MCMC process.
+_num_samples_ (default 250) - The number of times each chain will draw a sample in the MCMC process.
 
 _preemptible_ (default 2) - Number of times to preempt a VM before switching to an on-demand machine. Preemptible machines will be forced to preempt/restart after 24 hours.
 
@@ -187,7 +189,7 @@ _splotch_gene_idxs_ (optional) - The integer indexes of the genes to run cSplotc
 
 _total_genes_ (optional) - The number of genes to run cSplotch on. Defaults to the length of _splotch_gene_idxs_ if the list is defined, otherwise 0 if also left blank. 
 
-_tries_per_gene_ (default 1) - The number of timeouts alloted per gene before skipping to the next.
+_tries_per_gene_ (default 1) - The number of timeouts alloted per gene before skipping to the next (value of 1 skips to next gene after first timeout).
 
 _vm_total_retries_ (default 3) - The total number of allowed timeouts across all genes ran on the VM plus the number of preemptions.
 

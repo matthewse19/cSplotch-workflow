@@ -12,7 +12,7 @@ workflow Run_cSplotch {
         Int bootDiskSizeGb = 3
         Array[Int] splotch_gene_idxs = [] #optional array
         Int? total_genes
-        Int num_samples = 500
+        Int num_samples = 250
         Int num_chains = 4
         String csplotch_input_dir
         String csplotch_output_dir
