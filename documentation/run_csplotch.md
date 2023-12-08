@@ -19,11 +19,11 @@ _memory_ - The amount of memory allocated to each VM instanced. "16G" should be 
 
 _gene_timeout_hrs_ (default 24) - The number of hours the cSplotch model will run on a single gene before restarting or moving on to the next gene.
 
-_num_chains_ (default 4) - The number of independent MCMC chains to run.
+_num_chains_ (default 4) - The number of independent Hamiltonian Monte Carlo (HMC) chains to run.
 
 _num_cpu_ (default 4) - The number of CPUs each VM will request. Should match the number of chains for optimal performance.
 
-_num_samples_ (default 250) - The number of times each chain will draw a sample in the MCMC process.
+_hmc_samples_ (default 250) - The number of times each chain will draw a sample in the HMC process.
 
 _preemptible_ (default 2) - Number of times to preempt a VM before switching to an on-demand machine. Preemptible machines will be forced to preempt/restart after 24 hours.
 
