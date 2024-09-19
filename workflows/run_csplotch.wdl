@@ -9,7 +9,7 @@ workflow Run_cSplotch {
         String memory
         Int disk_size_gb
         Int max_concurrent_VMs
-        Int bootDiskSizeGb = 3
+        Int bootDiskSizeGb = 6
         Array[Int] splotch_gene_idxs = [] #optional array
         Int? total_genes
         Int hmc_samples = 250
@@ -72,7 +72,7 @@ task run_splotch {
         Int num_cpu
         String memory
         Int disk_size_gb
-        Int bootDiskSizeGb = 4
+        Int bootDiskSizeGb = 6
         Int preemptible
         String zones
         String docker

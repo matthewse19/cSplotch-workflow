@@ -11,7 +11,7 @@ workflow Prepare_Count_Files {
         Int preemptible = 2
         String memory = "50G"
         Int disk_size_gb
-        Int boot_disk_size_gb = 3
+        Int boot_disk_size_gb = 6
         String root_dir
         String spaceranger_dir = ""
         String st_count_dir = ""
@@ -47,7 +47,7 @@ task prepare {
         Int preemptible = 2
         String memory = "16G"
         Int disk_size_gb
-        Int boot_disk_size_gb = 3
+        Int boot_disk_size_gb = 6
         String root_dir
         String spaceranger_dir
         String st_count_dir

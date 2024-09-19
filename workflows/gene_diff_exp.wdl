@@ -8,7 +8,7 @@ workflow Gene_Diff_Exp {
         String memory = "16G"
         Int num_cpu = 1
         Int disk_size_gb
-        Int boot_disk_size_gb = 3
+        Int boot_disk_size_gb = 6
         File gene_indexes
         File splotch_information_p
         String results_csv_name
@@ -61,7 +61,7 @@ task diff_exp {
         String memory = "16G"
         Int num_cpu = 1
         Int disk_size_gb
-        Int boot_disk_size_gb = 3
+        Int boot_disk_size_gb = 6
         File gene_indexes
         File splotch_information_p
         String results_csv_name
