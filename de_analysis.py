@@ -58,7 +58,7 @@ def gene_de_dict(gene_h5, sinfo, test_type, aars, conditions, level=1, cell_type
 
         first_aar_idx = [aar_idxs[0]]
         if len(aars) == 1:
-            second_aar_idx = list(set(range(len(annotation_mapping))) - first_aar_idx) #remove first index from [0, 1, ... num_aars]
+            second_aar_idx = list(set(range(len(annotation_mapping))) - set(first_aar_idx)) #remove first index from [0, 1, ... num_aars]
         else:
             second_aar_idx = [aar_idxs[1]]
 
