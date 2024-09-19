@@ -7,12 +7,13 @@ CMD ["/bin/bash"]
 
 WORKDIR /usr
 
-RUN apt-get update && apt-get install -y g++ curl git python3 python3-pip # buildkit
+RUN apt-get update && apt-get install -y g++ curl wget git python3 python3-pip # buildkit
 RUN pip3 install git+https://git@github.com/adaly/cSplotch.git # buildkit
 RUN git clone https://github.com/adaly/cSplotch.git --recursive # buildkit
-RUN git clone https://github.com/stan-dev/cmdstan.git --recursive # buildkit
+RUN wget https://github.com/stan-dev/cmdstan/releases/download/v2.33.0/cmdstan-2.33.0.tar.gz
+RUN tar -xvzf cmdstan-2.33.0.tar.gz
 
-WORKDIR /usr/cmdstan
+WORKDIR /usr/cmdstan-2.33.0
 RUN make build # buildkit
 
 #update stan syntax
