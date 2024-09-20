@@ -1,0 +1,13 @@
+#!/bin/sh
+
+set -e
+
+#validate .wdl files
+find . -type f -name "*.wdl" -execdir echo {} + -execdir java -jar ~/Applications/womtool-85.jar validate {} +
+
+#dockstore yaml validate always returns true -- check that invalid is not in stdout
+YAML_VALID=`dockstore yaml validate --path .`
+
+echo $YAML_VALID
+
+echo $YAML_VALID | grep "invalid" -vzq #invert exit code, stream input, surpress output

@@ -37,7 +37,7 @@ The following input parameters are present in all of the cSplotch Terra workflow
 
 _disk\_size\_gb_ - Size in GB that the VM should allocate for storage.
 
-_boot\_disk\_size\_gb_ (default 3) - Size of the disk where the docker image is booted.
+_boot\_disk\_size\_gb_ (default 6) - Size of the disk where the docker image is booted.
 
 _docker_ (default "us-central1-docker.pkg.dev/techinno/images/csplotch_img:latest") - Docker image to use for the VM (it must have cSplotch and CmdStan installed and use google-cloud-cli as a base, see the [csplotch_img](https://github.com/matthewse19/cSplotch-workflow/blob/main/Dockerfile) default Dockerfile). 
 
