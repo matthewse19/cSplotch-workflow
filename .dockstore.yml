@@ -1,7 +1,7 @@
 version: 1.2
 workflows:
   - subclass: WDL
-    name: Run_cSplotch
+    name: runcSplotch
     primaryDescriptorPath: /workflows/run_csplotch.wdl
     readMePath: /documentation/run_csplotch.md
     authors:
