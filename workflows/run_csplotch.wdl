@@ -18,6 +18,7 @@ workflow Run_cSplotch {
         String csplotch_output_dir
         Float gene_timeout_hrs = 24
         Boolean compositional_data
+        Boolean summarize_output
     }
     
     #add extra offset if splotch_gene_idxs is not defined bc its first element will be 0
@@ -55,7 +56,8 @@ workflow Run_cSplotch {
                 hmc_samples = hmc_samples,
                 num_chains = num_chains,
                 gene_timeout_hrs = gene_timeout_hrs,
-                compositional_data = compositional_data
+                compositional_data = compositional_data,
+                summarize_output = summarize_output
         }
 
     }
@@ -87,10 +89,12 @@ task run_splotch {
         Int tries_per_gene = 1
         Int vm_total_retries = 3
         Boolean compositional_data
+        Boolean summarize_output = true
     }
 
     String csplotch_input_dir_stripped = sub(csplotch_input_dir, "/+$", "")
     String csplotch_output_dir_stripped = sub(csplotch_output_dir, "/+$", "")
+    String summarize_flag = if summarize_output then "-s" else ""
 
     Int last_idx = first_idx + num_genes - 1
   
@@ -124,10 +128,10 @@ task run_splotch {
                 gsutil cp $GENE_FILE ./data_directory/$GENE_DIR/
                 
                 if [[ "~{compositional_data}" == "true" ]]; then
-                    timeout ~{gene_timeout_hrs}h splotch -g $GENE_IDX -d ./data_directory -o ./csplotch_outputs -b $CSPLOTCH_BIN -n ~{hmc_samples} -c ~{num_chains} -s
+                    timeout ~{gene_timeout_hrs}h splotch -g $GENE_IDX -d ./data_directory -o ./csplotch_outputs -b $CSPLOTCH_BIN -n ~{hmc_samples} -c ~{num_chains} ~{summarize_flag}
                     GENE_STATUS=`echo $?`
                 else
-                    timeout ~{gene_timeout_hrs}h splotch -g $GENE_IDX -d ./data_directory -o ./csplotch_outputs -b $SPLOTCH_BIN -n ~{hmc_samples} -c ~{num_chains} -s
+                    timeout ~{gene_timeout_hrs}h splotch -g $GENE_IDX -d ./data_directory -o ./csplotch_outputs -b $SPLOTCH_BIN -n ~{hmc_samples} -c ~{num_chains} ~{summarize_flag}
                     GENE_STATUS=`echo $?`
                 fi
                 
@@ -146,8 +150,18 @@ task run_splotch {
                     fi
 
                 else
-                    gsutil cp ./csplotch_outputs/$GENE_DIR/combined_$GENE_IDX.hdf5 ~{csplotch_output_dir_stripped}/$GENE_DIR/combined_$GENE_IDX.hdf5
-                    rm ./csplotch_outputs/$GENE_DIR/combined_$GENE_IDX.hdf5
+                    if [[ "~{summarize_output}" == "true" ]]; then
+                        gsutil cp ./csplotch_outputs/$GENE_DIR/combined_$GENE_IDX.hdf5 ~{csplotch_output_dir_stripped}/$GENE_DIR/combined_$GENE_IDX.hdf5
+                        
+                        rm ./csplotch_outputs/$GENE_DIR/combined_$GENE_IDX.hdf5
+                    else
+                        gzip ./csplotch_outputs/$GENE_DIR/combined_$GENE_IDX.csv
+                        gsutil cp ./csplotch_outputs/$GENE_DIR/combined_$GENE_IDX.csv.gz ~{csplotch_output_dir_stripped}/$GENE_DIR/combined_$GENE_IDX.csv.gz
+
+                        rm ./csplotch_outputs/$GENE_DIR/combined_$GENE_IDX.csv
+                        rm ./csplotch_outputs/$GENE_DIR/combined_$GENE_IDX.csv.gz
+
+                    fi
                 fi
                 rm ./data_directory/$GENE_DIR/data_$GENE_IDX.R
 
